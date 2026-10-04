@@ -46,8 +46,7 @@ develop-eggs/
 dist/
 downloads/
 eggs/
-.eggs/
-lib/
+# lib/ (needed for Next.js TypeScript lib directory)
 lib64/
 parts/
 sdist/
