@@ -36,6 +36,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   language: propLang,
   onLanguageChange,
   onTakeTour,
+}) => {
   const { language: contextLang, setLanguage: setContextLang } = useLanguage();
   const currentLang = propLang || contextLang;
   const language = currentLang;
