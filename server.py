@@ -29,13 +29,18 @@ app.add_middleware(
 )
 
 # Load cached clean datasets and metadata
-DATA_DIR = os.path.join(os.path.dirname(__file__), "data_clean")
-MODELS_DIR = os.path.join(os.path.dirname(__file__), "models")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, "data_clean")
+MODELS_DIR = os.path.join(BASE_DIR, "models")
 
 df_panchayats = pd.read_csv(os.path.join(DATA_DIR, "panchayat_features_clean.csv"))
 df_predictions = pd.read_csv(os.path.join(DATA_DIR, "predictions_test.csv"))
 df_scorecard = pd.read_csv(os.path.join(DATA_DIR, "scorecard.csv"))
-df_model_comp = pd.read_csv(os.path.join(os.path.dirname(__file__), "model_comparison.csv"))
+
+model_comp_file = os.path.join(BASE_DIR, "model_comparison.csv")
+if not os.path.exists(model_comp_file):
+    model_comp_file = os.path.join(BASE_DIR, "reports", "MODEL_COMPARISON.csv")
+df_model_comp = pd.read_csv(model_comp_file)
 
 with open(os.path.join(MODELS_DIR, "model_metadata.json"), "r") as f:
     model_metadata = json.load(f)
