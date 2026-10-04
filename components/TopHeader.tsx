@@ -16,15 +16,15 @@ import {
   Sprout,
   Compass,
 } from "lucide-react";
-import { useLanguage } from "@/lib/LanguageContext";
+import { useLanguage, type Language } from "@/lib/LanguageContext";
 
 interface TopHeaderProps {
   title?: string;
   description?: string;
   selectedPanchayatName?: string;
   onRefresh?: () => void;
-  language?: "en" | "mr";
-  onLanguageChange?: (lang: "en" | "mr") => void;
+  language?: Language;
+  onLanguageChange?: (lang: Language) => void;
   onTakeTour?: () => void;
 }
 
@@ -47,7 +47,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   const [loginId, setLoginId] = useState("9823456789");
   const [loginPass, setLoginPass] = useState("••••");
 
-  const handleLanguageSwitch = (newLang: "en" | "mr") => {
+  const handleLanguageSwitch = (newLang: Language) => {
     setContextLang(newLang);
     if (onLanguageChange) {
       onLanguageChange(newLang);

@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaf
 import L from "leaflet";
 import { Panchayat } from "@/lib/types";
 import { formatRainfall, formatTemp } from "@/lib/utils";
+import { useLanguage, type Language } from "@/lib/LanguageContext";
 import "leaflet/dist/leaflet.css";
 
 interface LeafletMapInnerProps {
@@ -13,7 +14,7 @@ interface LeafletMapInnerProps {
   zoneFilter: string;
   selectedLgd?: string;
   onSelectPanchayat?: (lgd: string) => void;
-  language?: "en" | "mr";
+  language?: Language;
 }
 
 function MapController({
