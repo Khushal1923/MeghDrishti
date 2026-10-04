@@ -63,6 +63,26 @@ export interface CropAdvisory {
   recommended_action: string;
   why: string;
   disclaimer: string;
+  spray_window?: string;
+  spray_status?: "AVOID" | "CAUTION" | "SAFE" | string;
+  irrigation_advice?: string;
+  irrigation_status?: "STOP" | "IRRIGATE" | string;
+  fertilizer_advice?: string;
+  pest_alert?: string;
+  pest_remedy?: string;
+}
+
+export interface ForecastHistoryItem {
+  date: string;
+  observed_rainfall: number;
+  baseline_rainfall: number;
+  corrected_rainfall: number;
+  range_low: number;
+  range_high: number;
+  observed_temperature: number;
+  baseline_temperature: number;
+  corrected_temperature: number;
+  rain_probability: number;
 }
 
 export interface ModelComparisonItem {
