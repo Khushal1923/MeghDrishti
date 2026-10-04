@@ -1,0 +1,72 @@
+{
+  "model_name": "MeghDrishti Panchayat Weather Downscaling Engine",
+  "version": "meghdrishti_v1",
+  "training_date": "2026-10-03",
+  "dataset_source": "Open-Meteo Historical Forecast API & IMD Gridded Archive Reference",
+  "training_period": "2023-01-01 to 2024-05-31",
+  "validation_period": "2024-06-01 to 2024-11-30",
+  "test_period": "2024-12-01 to 2025-06-30",
+  "zones": [
+    "Maharashtra",
+    "Karnataka",
+    "Telangana"
+  ],
+  "panchayats_count": 13,
+  "total_matched_pairs": 59280,
+  "lead_days_supported": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "rainfall_targets": [
+    "observed_rainfall_mm",
+    "rain_event_binary_2.5mm"
+  ],
+  "temperature_target": "observed_temperature_C",
+  "feature_count": 27,
+  "features": [
+    "forecast_rainfall",
+    "forecast_temperature",
+    "forecast_temperature_max",
+    "forecast_temperature_min",
+    "forecast_wind",
+    "forecast_rain_probability",
+    "latitude",
+    "longitude",
+    "elevation_m",
+    "slope_deg",
+    "aspect_deg",
+    "elev_diff",
+    "cropland_frac",
+    "forest_frac",
+    "builtup_frac",
+    "water_frac",
+    "soil_clay_pct",
+    "soil_sand_pct",
+    "soil_silt_pct",
+    "soil_ph",
+    "soil_organic_carbon_pct",
+    "month",
+    "day_of_year",
+    "day_of_week",
+    "lead_days",
+    "hist_rain_bias",
+    "hist_temp_bias"
+  ],
+  "metrics_test": {
+    "baseline_rainfall_mae_mm": 1.6796,
+    "ridge_rainfall_mae_mm": 0.9916,
+    "rf_rainfall_mae_mm": 0.9031,
+    "lightgbm_rainfall_mae_mm": 0.6301,
+    "lightgbm_rain_csi": 0.7249,
+    "classifier_brier_score": 0.0322,
+    "classifier_roc_auc": 0.9843,
+    "temperature_baseline_mae_C": 0.5391,
+    "temperature_model_mae_C": 0.4398,
+    "prediction_interval_coverage_pct": 96.73,
+    "average_interval_width_mm": 5.42
+  },
+  "best_model": "LightGBM Regressor (Lowest holdout MAE, highest CSI, fastest inference)"
+}

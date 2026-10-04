@@ -1,0 +1,8 @@
+model,target,zone,lead_time,season,MAE,RMSE,bias,correlation,POD,FAR,CSI,Brier,sample_count,training_time_sec,status
+Baseline 1 (Raw NWP Forecast),observed_rainfall_mm,All Zones,1-5 Days,All Seasons,1.6796,3.0382,1.0635,0.9451,0.9076,0.5359,0.4432,,13780,0.0,BASELINE
+Baseline 2 (Hist Bias Corrected),observed_rainfall_mm,All Zones,1-5 Days,All Seasons,1.074,2.4536,0.3064,0.9616,0.8502,0.4048,0.5387,,13780,0.05,IMPROVED
+Ridge Regression,observed_rainfall_mm,All Zones,1-5 Days,All Seasons,0.9916,2.1192,0.0522,0.9764,0.8009,0.3034,0.5938,,13780,0.012,IMPROVED
+Random Forest Regressor,observed_rainfall_mm,All Zones,1-5 Days,All Seasons,0.9031,2.5871,-0.2299,0.9692,0.7583,0.1319,0.68,,13780,0.839,IMPROVED
+LightGBM Regressor,observed_rainfall_mm,All Zones,1-5 Days,All Seasons,0.6301,2.0937,-0.1402,0.9735,0.8104,0.1271,0.7249,,13780,0.78,IMPROVED
+LightGBM Rain Classifier,rain_event (>=2.5mm),All Zones,1-5 Days,All Seasons,,,,,0.8152,0.1056,0.7436,0.0322,13780,0.78,CALIBRATED_CLASSIFIER
+LightGBM Temperature Model,observed_temperature_C,All Zones,1-5 Days,All Seasons,0.4398,0.5606,0.0463,0.9844,,,,,13780,0.45,IMPROVED

@@ -1,0 +1,8 @@
+check,violation_count,status
+Negative Rainfall Values in Forecast,0,PASSED
+Negative Rainfall Values in Observations,0,PASSED
+Impossible Temperature (< -10C or > 60C),0,PASSED
+Impossible Coordinates,0,PASSED
+Duplicate Forecast Issue-Valid-Panchayat Pairs,0,PASSED
+Duplicate Observation Valid-Panchayat Pairs,0,PASSED
+Extreme Rainfall Event Flag (> 200 mm/day),0,FLAGGED_VALID (Retained for extreme event evaluation)

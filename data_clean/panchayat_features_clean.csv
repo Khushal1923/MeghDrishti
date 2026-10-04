@@ -1,0 +1,14 @@
+zone,state,district,taluka,panchayat_name,village_name,lgd_code,latitude,longitude,elevation_m,slope_deg,aspect_deg,cropland_frac,forest_frac,builtup_frac,water_frac,soil_clay_pct,soil_sand_pct,soil_silt_pct,soil_ph,soil_organic_carbon_pct,soil_type
+Maharashtra,Maharashtra,Pune,Haveli,Wagholi Gram Panchayat,Wagholi,MH_PUN_001,18.5793,73.9814,570,3.2,140,0.45,0.05,0.4,0.02,38.0,28.0,34.0,7.4,0.65,Black Cotton Soil (Vertisol)
+Maharashtra,Maharashtra,Pune,Baramati,Malegaon Budruk Gram Panchayat,Malegaon Bk,MH_PUN_002,18.1512,74.5775,548,1.8,90,0.78,0.02,0.12,0.03,45.0,20.0,35.0,7.8,0.58,Deep Black Clay Soil
+Maharashtra,Maharashtra,Pune,Junnar,Otur Gram Panchayat,Otur,MH_PUN_003,19.2611,73.9868,680,6.5,230,0.62,0.22,0.08,0.04,32.0,36.0,32.0,6.9,0.82,Reddish Loamy Forest Soil
+Maharashtra,Maharashtra,Satara,Mahabaleshwar,Tapola Gram Panchayat,Tapola,MH_SAT_001,17.7833,73.6833,890,14.2,270,0.3,0.55,0.04,0.08,28.0,42.0,30.0,6.2,1.25,Laterite Mountain Soil
+Maharashtra,Maharashtra,Solapur,Pandharpur,Kasegaon Gram Panchayat,Kasegaon,MH_SOL_001,17.6744,75.3242,462,1.2,110,0.82,0.01,0.1,0.02,52.0,18.0,30.0,8.1,0.45,Heavy Black Vertisol
+Karnataka,Karnataka,Belagavi,Chikkodi,Nipani Gram Panchayat,Nipani Rural,KA_BEL_001,16.398,74.382,625,3.8,180,0.72,0.1,0.12,0.02,40.0,28.0,32.0,7.3,0.72,Medium Black and Red Loam
+Karnataka,Karnataka,Dharwad,Hubballi,Gokul Gram Panchayat,Gokul,KA_DHA_001,15.3647,75.0833,665,2.5,200,0.68,0.08,0.18,0.02,42.0,25.0,33.0,7.5,0.6,Black Cotton Soil
+Karnataka,Karnataka,Bagalkot,Jamkhandi,Savalagi Gram Panchayat,Savalagi,KA_BAG_001,16.5122,75.3211,530,1.5,80,0.8,0.02,0.12,0.03,48.0,22.0,30.0,7.9,0.5,Deep Black Clayey
+Karnataka,Karnataka,Hassan,Sakleshpur,Hettur Gram Panchayat,Hettur,KA_HAS_001,12.8333,75.8,950,12.5,250,0.4,0.5,0.05,0.03,25.0,45.0,30.0,5.9,1.4,Humus-rich Lateritic Soil
+Telangana,Telangana,Medak,Medak Rural,Haveli Ghanpur Gram Panchayat,Haveli Ghanpur,TS_MED_001,18.0489,78.2612,485,2.1,120,0.65,0.12,0.15,0.05,28.0,48.0,24.0,6.8,0.52,Red Sandy Loam (Chalka)
+Telangana,Telangana,Siddipet,Gajwel,Pregnapur Gram Panchayat,Pregnapur,TS_SID_001,17.8465,78.6833,512,1.9,105,0.7,0.08,0.16,0.04,32.0,44.0,24.0,7.0,0.55,Red Sandy Loam / Mixed
+Telangana,Telangana,Warangal,Wardhannapet,Rayaparthy Gram Panchayat,Rayaparthy,TS_WAR_001,17.8012,79.6234,275,1.4,95,0.75,0.06,0.14,0.03,35.0,40.0,25.0,7.2,0.48,Red Earth / Black Alluvial Mix
+Telangana,Telangana,Mahabubnagar,Jadcherla,Badepalle Gram Panchayat,Badepalle,TS_MAH_001,16.7667,78.1333,508,2.3,150,0.72,0.05,0.18,0.02,26.0,52.0,22.0,6.9,0.42,Red Sandy Loam (Dubba)
