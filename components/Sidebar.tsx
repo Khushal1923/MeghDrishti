@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
+import { useTranslations } from "next-intl";
 
 interface NavItem {
   key: string;
@@ -25,19 +26,19 @@ interface NavItem {
   icon: React.ElementType;
 }
 
-const PRIMARY_NAV: NavItem[] = [
-  { key: "nav.dashboard", en: "Farmer View", mr: "शेतकरी व्ह्यू", href: "/dashboard", icon: LayoutDashboard },
-  { key: "nav.officer", en: "Officer View", mr: "अधिकारी व्ह्यू", href: "/officer", icon: Shield },
-  { key: "nav.advisory", en: "Crop Advisory", mr: "पीक सल्ला", href: "/advisory", icon: Sprout },
-  { key: "nav.forecast", en: "Forecast", mr: "अंदाज", href: "/forecast", icon: CloudSun },
-  { key: "nav.comparison", en: "Compare", mr: "तुलना", href: "/comparison", icon: BarChart3 },
-  { key: "nav.panchayats", en: "Villages", mr: "गावे", href: "/panchayats", icon: MapPin },
+const PRIMARY_NAV_KEYS = [
+  { key: "nav.dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { key: "nav.officer", href: "/officer", icon: Shield },
+  { key: "nav.advisory", href: "/advisory", icon: Sprout },
+  { key: "nav.forecast", href: "/forecast", icon: CloudSun },
+  { key: "nav.comparison", href: "/comparison", icon: BarChart3 },
+  { key: "nav.panchayats", href: "/panchayats", icon: MapPin },
 ];
 
 export const Sidebar: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
-  const { language } = useLanguage();
+  const tN = useTranslations("nav");
 
   return (
     <>
@@ -77,10 +78,12 @@ export const Sidebar: React.FC = () => {
 
           {/* Primary Navigation Menu */}
           <nav className="p-3 space-y-1 mt-2">
-            {PRIMARY_NAV.map((item) => {
+            {PRIMARY_NAV_KEYS.map((item) => {
               const Icon = item.icon;
               const active = pathname === item.href;
-              const label = language === "mr" ? item.mr : item.en;
+              // Extract the translation key after the dot (e.g. "nav.dashboard" -> "dashboard")
+              const tKey = item.key.split(".")[1] as Parameters<typeof tN>[0];
+              const label = tN(tKey);
 
               return (
                 <Link
@@ -116,10 +119,11 @@ export const Sidebar: React.FC = () => {
 
       {/* 2. MOBILE BOTTOM NAVIGATION (Visible on mobile screens < md) */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#e5eee5]/95 backdrop-blur-lg border-t border-[#c8d9c8] px-2 py-1.5 shadow-lg flex items-center justify-around safe-area-bottom">
-        {PRIMARY_NAV.map((item) => {
+        {PRIMARY_NAV_KEYS.map((item) => {
           const Icon = item.icon;
           const active = pathname === item.href;
-          const label = language === "mr" ? item.mr : item.en;
+          const tKey = item.key.split(".")[1] as Parameters<typeof tN>[0];
+          const label = tN(tKey);
 
           return (
             <Link

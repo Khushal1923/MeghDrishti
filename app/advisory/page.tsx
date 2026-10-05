@@ -22,6 +22,20 @@ export default function CropAdvisoryPage() {
 
   const current = PANCHAYATS_DATA.find((p) => p.lgd_code === selectedLgd) || PANCHAYATS_DATA[0];
 
+  const getSoilType = (st: string) => {
+    if (!st) return "";
+    if (st.includes("Black Cotton")) {
+      return language === "mr" ? "काळी कसदार माती (व्हर्टिसॉल)" : language === "hi" ? "काली कपास मिट्टी (वर्टिसोल)" : st;
+    }
+    if (st.includes("Red Sandy") || st.includes("Sandy")) {
+      return language === "mr" ? "तांबडी वाळूमिश्रित माती (अल्फिसॉल)" : language === "hi" ? "लाल रेतीली मिट्टी (अल्फीसोल)" : st;
+    }
+    if (st.includes("Clay Loam")) {
+      return language === "mr" ? "चिकणमाती पोयटा (इन्सेप्टिसॉल)" : language === "hi" ? "दोमट चिकनी मिट्टी (इन्सेप्टिसोल)" : st;
+    }
+    return st;
+  };
+
   return (
     <div className="flex-1 pb-16 space-y-6 bg-[#edf2ed]">
       <TopHeader
@@ -38,7 +52,11 @@ export default function CropAdvisoryPage() {
             </div>
             <div>
               <label className="text-[10px] uppercase font-black text-[#166534]/70 tracking-wider block">
-                {language === "mr" ? "स्थानिक ग्रामपंचायत निवडा" : "Select Panchayat Location"}
+                {language === "mr"
+                  ? "स्थानिक ग्रामपंचायत निवडा"
+                  : language === "hi"
+                  ? "स्थानीय ग्राम पंचायत चुनें"
+                  : "Select Panchayat Location"}
               </label>
               <select
                 value={selectedLgd}
@@ -55,7 +73,10 @@ export default function CropAdvisoryPage() {
           </div>
 
           <div className="text-xs text-[#2b4c34] font-black bg-[#e4eee4] px-3.5 py-1.5 rounded-full border border-[#c3d6c4]">
-            {language === "mr" ? "माती:" : "Soil:"} <strong className="text-[#0f2918]">{current.soil_type}</strong> &bull; {language === "mr" ? "उंची:" : "Elev:"} <strong className="text-[#0f2918]">{current.elevation_m}m</strong>
+            {language === "mr" ? "माती:" : language === "hi" ? "मिट्टी:" : "Soil:"}{" "}
+            <strong className="text-[#0f2918]">{getSoilType(current.soil_type)}</strong> &bull;{" "}
+            {language === "mr" ? "उंची:" : language === "hi" ? "ऊंचाई:" : "Elev:"}{" "}
+            <strong className="text-[#0f2918]">{current.elevation_m}m</strong>
           </div>
         </div>
 
@@ -82,7 +103,11 @@ export default function CropAdvisoryPage() {
           />
         ) : (
           <div className="bg-[#f4f8f4] border border-[#c8d9c8] rounded-3xl p-8 flex items-center justify-center text-xs text-[#166534] font-black">
-            {language === "mr" ? "पीक सल्ला लोड होत आहे..." : "Loading Crop Advisory Intelligence..."}
+            {language === "mr"
+              ? "पीक सल्ला लोड होत आहे..."
+              : language === "hi"
+              ? "फसल सलाह लोड हो रही है..."
+              : "Loading Crop Advisory Intelligence..."}
           </div>
         )}
 
@@ -91,11 +116,17 @@ export default function CropAdvisoryPage() {
           <div className="bg-[#f4f8f4] border border-[#c8d9c8] rounded-2xl p-4 shadow-2xs space-y-1.5">
             <h4 className="font-black text-xs uppercase tracking-wider text-[#0f2918] flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-[#166534]" />
-              {language === "mr" ? "कृषी वैज्ञानिक निकष" : "Agronomic Scientific Thresholds"}
+              {language === "mr"
+                ? "कृषी वैज्ञानिक निकष"
+                : language === "hi"
+                ? "कृषि वैज्ञानिक निकष"
+                : "Agronomic Scientific Thresholds"}
             </h4>
             <p className="text-xs text-[#2b4c34] leading-relaxed font-bold">
               {language === "mr"
                 ? "स्थानिक पाऊस शक्यता (≥२.५ मिमी निकष) आणि जमिनीतील चिकणमाती ओलावा क्षमतेनुसार फवारणी व सिंचन वेळापत्रक ठरवले जाते."
+                : language === "hi"
+                ? "स्थानीय वर्षा संभावना (≥ 2.5 मिमी सीमा) और मिट्टी में क्ले नमी क्षमता के आधार पर छिड़काव व सिंचाई अनुशंसित है।"
                 : "Cross-references precipitation probability (≥ 2.5 mm threshold) and clay retention capacity to recommend precise irrigation and spraying windows."}
             </p>
           </div>
@@ -103,12 +134,18 @@ export default function CropAdvisoryPage() {
           <div className="bg-[#f4f8f4] border border-[#c8d9c8] rounded-2xl p-4 shadow-2xs space-y-1.5">
             <h4 className="font-black text-xs uppercase tracking-wider text-[#0f2918] flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-[#166534]" />
-              {language === "mr" ? "शेतकरी अनुकूल थेट निर्णय" : "Direct Field Decision Support"}
+              {language === "mr"
+                ? "शेतकरी अनुकूल थेट निर्णय"
+                : language === "hi"
+                ? "किसान अनुकूल सीधा निर्णय"
+                : "Direct Field Decision Support"}
             </h4>
             <p className="text-xs text-[#2b4c34] leading-relaxed font-bold">
               {language === "mr"
-                ? "शेतकऱ्यांना समजण्यासाठी सुलभ मराठी व इंग्रजीत कृती सल्ला, आवाज ऐकण्याची सुविधा व WhatsApp वर शेअर करण्याचा पर्याय."
-                : "Clear Marathi and English advisories with voice audio readout and instant WhatsApp sharing for village farmer groups."}
+                ? "शेतकऱ्यांना समजण्यासाठी सुलभ प्रादेशिक भाषेत कृती सल्ला, आवाज ऐकण्याची सुविधा व WhatsApp वर शेअर करण्याचा पर्याय."
+                : language === "hi"
+                ? "किसानों के लिए स्थानीय भाषा में व्यावहारिक सलाह, ध्वनि सुनाने की सुविधा और सीधा WhatsApp साझाकरण।"
+                : "Clear multilingual crop advisories with voice audio readout and instant WhatsApp sharing for village farmer groups."}
             </p>
           </div>
         </div>

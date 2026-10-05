@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 
 import { LanguageProvider } from "@/lib/LanguageContext";
 import { AuthProvider } from "@/lib/AuthContext";
+import { VoiceChatbot } from "@/components/VoiceChatbot";
 
 export default function RootLayout({
   children,
@@ -26,6 +27,7 @@ export default function RootLayout({
             <div className="flex-1 flex flex-col min-w-0 overflow-y-auto pb-20 md:pb-0">
               {children}
             </div>
+            <VoiceChatbot />
           </AuthProvider>
         </LanguageProvider>
       </body>

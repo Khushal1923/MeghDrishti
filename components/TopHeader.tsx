@@ -25,14 +25,14 @@ import {
   LogOut,
   Sparkles,
   Mail,
-  Loader2,
   AlertCircle,
-  User,
+  Loader2,
 } from "lucide-react";
 import { useLanguage, type Language } from "@/lib/LanguageContext";
 import { useAuth, DEMO_USERS } from "@/lib/AuthContext";
 import { PANCHAYATS_DATA } from "@/lib/data";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface TopHeaderProps {
   title?: string;
@@ -59,6 +59,16 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   const pathname = usePathname();
   const router = useRouter();
 
+  const tH = useTranslations("header");
+  const tN = useTranslations("nav");
+  const tL = useTranslations("login");
+
+  const t = (mrText: string, hiText: string, enText: string) => {
+    if (language === "mr") return mrText;
+    if (language === "hi") return hiText;
+    return enText;
+  };
+
   const {
     user,
     loginAs,
@@ -72,27 +82,25 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
 
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
   const [loginRoleTab, setLoginRoleTab] = useState<"farmer" | "officer">("farmer");
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authSuccess, setAuthSuccess] = useState<string | null>(null);
 
-  // Farmer Form State
+  // Farmer form state
   const [farmerPhone, setFarmerPhone] = useState("9823456789");
   const [farmerPin, setFarmerPin] = useState("1234");
   const [farmerName, setFarmerName] = useState("Ramesh Tukaram Patil");
   const [farmerVillage, setFarmerVillage] = useState("MH_PUN_001");
   const [farmerCrops, setFarmerCrops] = useState<string[]>(["Cotton", "Soybean"]);
 
-  // Officer Form State
+  // Officer form state
   const [officerId, setOfficerId] = useState("OFFICER_IMD_2026");
   const [officerPass, setOfficerPass] = useState("admin123");
   const [officerName, setOfficerName] = useState("Dr. Aniruddha Deshmukh");
   const [officerEmail, setOfficerEmail] = useState("officer.imd@meghdrishti.in");
-  const [officerDept, setOfficerDept] = useState("District Agricultural & Meteorological Division");
-
-  // UI State
-  const [authLoading, setAuthLoading] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
-  const [authSuccess, setAuthSuccess] = useState<string | null>(null);
+  const [officerDept, setOfficerDept] = useState("Division of Agricultural Meteorology");
 
   const handleLanguageSwitch = (newLang: Language) => {
     setContextLang(newLang);
@@ -102,55 +110,40 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   };
 
   const toggleCrop = (crop: string) => {
-    if (farmerCrops.includes(crop)) {
-      setFarmerCrops(farmerCrops.filter((c) => c !== crop));
-    } else {
-      setFarmerCrops([...farmerCrops, crop]);
-    }
+    setFarmerCrops((prev) =>
+      prev.includes(crop) ? prev.filter((c) => c !== crop) : [...prev, crop]
+    );
   };
 
   const handleFarmerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthLoading(true);
     setAuthError(null);
     setAuthSuccess(null);
-    setAuthLoading(true);
 
     try {
-      if (authMode === "signin") {
-        const res = await signInFarmer(farmerPhone, farmerPin);
-        if (res.error) {
-          setAuthError(res.error.message);
-        } else {
-          setAuthSuccess(language === "mr" ? "शेतकरी खात्यात यशस्वी प्रवेश!" : "Signed in as Farmer successfully!");
-          setTimeout(() => {
-            setShowLoginModal(false);
-            router.push("/dashboard");
-          }, 700);
-        }
+      if (authMode === "signup") {
+        const selectedPanch = PANCHAYATS_DATA.find((p) => p.lgd_code === farmerVillage);
+        await signUpFarmer(
+          farmerPhone,
+          farmerPin,
+          farmerName,
+          selectedPanch ? `${selectedPanch.panchayat_name}, ${selectedPanch.district}` : "Pune, Maharashtra",
+          farmerVillage,
+          farmerCrops
+        );
+        setAuthSuccess(t("शेतकरी नोंदणी यशस्वी! थेट प्रवेश होत आहे...", "किसान पंजीकरण सफल! प्रवेश हो रहा है...", "Farmer registration successful! Redirecting..."));
       } else {
-        // Sign Up
-        const villageObj = PANCHAYATS_DATA.find((p) => p.lgd_code === farmerVillage);
-        const res = await signUpFarmer({
-          name: farmerName,
-          phone: farmerPhone,
-          pin: farmerPin,
-          panchayatLgd: farmerVillage,
-          location: villageObj ? `${villageObj.panchayat_name}, ${villageObj.district}` : "Maharashtra Gram Panchayat",
-          crops: farmerCrops,
-        });
-
-        if (res.error) {
-          setAuthError(res.error.message);
-        } else {
-          setAuthSuccess(language === "mr" ? "शेतकरी नोंदणी यशस्वी झाली!" : "Farmer registration successful!");
-          setTimeout(() => {
-            setShowLoginModal(false);
-            router.push("/dashboard");
-          }, 700);
-        }
+        await signInFarmer(farmerPhone, farmerPin);
+        setAuthSuccess(t("लॉगिन यशस्वी! स्वागत आहे.", "लॉगिन सफल! स्वागत है।", "Sign in successful!"));
       }
+
+      setTimeout(() => {
+        setShowLoginModal(false);
+        router.push("/dashboard");
+      }, 700);
     } catch (err: any) {
-      setAuthError(err.message || "Authentication error");
+      setAuthError(err.message || t("प्रमाणीकरण अयशस्वी झाले.", "प्रमाणीकरण विफल रहा।", "Authentication failed"));
     } finally {
       setAuthLoading(false);
     }
@@ -158,45 +151,31 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
 
   const handleOfficerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthLoading(true);
     setAuthError(null);
     setAuthSuccess(null);
-    setAuthLoading(true);
 
     try {
-      if (authMode === "signin") {
-        const res = await signInOfficer(officerId, officerPass);
-        if (res.error) {
-          setAuthError(res.error.message);
-        } else {
-          setAuthSuccess(language === "mr" ? "अधिकारी खात्यात यशस्वी प्रवेश!" : "Signed in as Officer successfully!");
-          setTimeout(() => {
-            setShowLoginModal(false);
-            router.push("/officer");
-          }, 700);
-        }
+      if (authMode === "signup") {
+        await signUpOfficer(
+          officerEmail,
+          officerPass,
+          officerName,
+          officerId,
+          officerDept
+        );
+        setAuthSuccess(t("अधिकारी खाते तयार झाले! प्रवेश होत आहे...", "अधिकारी खाता निर्मित! प्रवेश हो रहा है...", "Officer registered! Redirecting to research portal..."));
       } else {
-        // Sign Up
-        const res = await signUpOfficer({
-          name: officerName,
-          officerId: officerId,
-          email: officerEmail,
-          password: officerPass,
-          department: officerDept,
-          location: "IMD District Nodal Cell, Pune Division",
-        });
-
-        if (res.error) {
-          setAuthError(res.error.message);
-        } else {
-          setAuthSuccess(language === "mr" ? "अधिकारी नोंदणी यशस्वी झाली!" : "Officer registration successful!");
-          setTimeout(() => {
-            setShowLoginModal(false);
-            router.push("/officer");
-          }, 700);
-        }
+        await signInOfficer(officerEmail, officerPass);
+        setAuthSuccess(t("अधिकारी लॉगिन यशस्वी!", "अधिकारी लॉगिन सफल!", "Officer signed in!"));
       }
+
+      setTimeout(() => {
+        setShowLoginModal(false);
+        router.push("/officer");
+      }, 700);
     } catch (err: any) {
-      setAuthError(err.message || "Authentication error");
+      setAuthError(err.message || t("अधिकारी लॉगिन अयशस्वी.", "अधिकारी लॉगिन विफल।", "Officer authentication failed"));
     } finally {
       setAuthLoading(false);
     }
@@ -213,18 +192,18 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   };
 
   const allNavItems = [
-    { labelEn: "Home / Overview", labelMr: "मुख्य पान (Overview)", href: "/", icon: Globe2 },
-    { labelEn: "Farmer View (Kisan)", labelMr: "शेतकरी व्ह्यू (Kisan)", href: "/dashboard", icon: LayoutDashboard },
-    { labelEn: "Officer View (Research)", labelMr: "अधिकारी व्ह्यू (Research)", href: "/officer", icon: Shield },
-    { labelEn: "Crop Advisory", labelMr: "पीक सल्ला", href: "/advisory", icon: Sprout },
-    { labelEn: "Weather Forecast", labelMr: "हवामान अंदाज", href: "/forecast", icon: CloudSun },
-    { labelEn: "Forecast Compare", labelMr: "अंदाज तुलना", href: "/comparison", icon: BarChart3 },
-    { labelEn: "Panchayat Directory", labelMr: "गाव यादी", href: "/panchayats", icon: MapPin },
-    { labelEn: "Weather Map", labelMr: "हवामान नकाशा", href: "/map", icon: MapPin },
-    { labelEn: "Accuracy Validation", labelMr: "अचूकता पडताळणी", href: "/validation", icon: BarChart3 },
-    { labelEn: "Model & Data Lineage", labelMr: "मॉडेल व डेटा", href: "/models", icon: Layers },
-    { labelEn: "System Health", labelMr: "सिस्टम स्थिती", href: "/health", icon: Activity },
-    { labelEn: "Calibration Settings", labelMr: "कॅलिब्रेशन सेटिंग्ज", href: "/settings", icon: Settings },
+    { label: t("मुख्य पृष्ठ", "मुख्य पृष्ठ", "Home"), href: "/", icon: Globe2 },
+    { label: tN("dashboard"), href: "/dashboard", icon: LayoutDashboard },
+    { label: tN("officer"), href: "/officer", icon: Shield },
+    { label: tN("advisory"), href: "/advisory", icon: Sprout },
+    { label: tN("forecast"), href: "/forecast", icon: CloudSun },
+    { label: tN("comparison"), href: "/comparison", icon: BarChart3 },
+    { label: tN("panchayats"), href: "/panchayats", icon: MapPin },
+    { label: tN("map"), href: "/map", icon: MapPin },
+    { label: tN("validation"), href: "/validation", icon: BarChart3 },
+    { label: tN("models"), href: "/models", icon: Layers },
+    { label: tN("health"), href: "/health", icon: Activity },
+    { label: tN("settings"), href: "/settings", icon: Settings },
   ];
 
   return (
@@ -233,16 +212,15 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
       <header className="sticky top-0 z-30 bg-[#e5eee5]/95 backdrop-blur-md border-b border-[#c8d9c8] px-3.5 sm:px-6 md:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-4 shadow-xs">
         {/* Left: Hamburger menu (mobile) & Brand Logo */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Mobile Menu Hamburger Button */}
           <button
             onClick={() => setShowMobileMenu(true)}
             className="md:hidden w-9 h-9 rounded-xl bg-[#d5e4d5] hover:bg-[#c6d9c6] text-[#166534] flex items-center justify-center transition-colors shrink-0 shadow-2xs active:scale-95"
-            aria-label="Open menu"
+            aria-label={tH("openMenu")}
           >
             <Menu className="w-5 h-5" />
           </button>
 
-          <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity" title="Go to Home / Landing Page">
+          <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[#166534] text-white flex items-center justify-center shrink-0 shadow-xs">
               <Sprout className="w-4 h-4 text-emerald-100" />
             </div>
@@ -250,11 +228,25 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
               MeghDrishti
             </span>
           </Link>
+
+          {/* Optional page title and description */}
+          {title && (
+            <div className="hidden lg:block border-l border-[#c8d9c8] pl-3 ml-2">
+              <h1 className="text-xs sm:text-sm font-extrabold text-[#0f2918] leading-tight">
+                {title}
+              </h1>
+              {description && (
+                <p className="text-[10px] text-[#2b4c34] font-medium leading-none mt-0.5 truncate max-w-[340px]">
+                  {description}
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Right: Language Toggle + Role Login Info */}
         <div className="flex items-center gap-1.5 sm:gap-3">
-          {/* Language Toggle (मराठी | English Switch) */}
+          {/* Trilingual Toggle (मराठी | English | हिंदी) */}
           <div className="flex items-center bg-[#d5e4d5] p-0.5 rounded-full border border-[#c3d6c4] text-[11px] sm:text-xs font-bold">
             <button
               onClick={() => handleLanguageSwitch("mr")}
@@ -276,6 +268,16 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
             >
               English
             </button>
+            <button
+              onClick={() => handleLanguageSwitch("hi")}
+              className={`px-2.5 sm:px-3 py-1 rounded-full transition-all ${
+                currentLang === "hi"
+                  ? "bg-[#166534] text-white shadow-xs font-extrabold"
+                  : "text-[#166534] hover:text-[#0b1f11]"
+              }`}
+            >
+              हिंदी
+            </button>
           </div>
 
           {/* User Auth Status or Login Button */}
@@ -289,7 +291,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                     : "bg-[#d7ead9] text-[#166534] border-[#a7d4ac]"
                 )}
                 onClick={() => setShowLoginModal(true)}
-                title="Click to Switch Role or View Profile"
+                title={tH("switchRole")}
               >
                 {user.role === "officer" ? (
                   <Shield className="w-3.5 h-3.5 text-amber-300" />
@@ -297,14 +299,14 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                   <UserCheck className="w-3.5 h-3.5 text-[#166534]" />
                 )}
                 <span className="max-w-[90px] sm:max-w-[140px] truncate">
-                  {language === "mr" ? user.roleTitleMr.split(" ")[0] : user.roleTitleEn.split(" ")[0]}: {user.name.split(" ")[0]}
+                  {language === "mr" ? user.roleTitleMr.split(" ")[0] : language === "hi" ? user.roleTitleHi.split(" ")[0] : user.roleTitleEn.split(" ")[0]}: {user.name.split(" ")[0]}
                 </span>
               </div>
 
               <button
                 onClick={logout}
                 className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#d5e4d5] hover:bg-rose-100 text-[#166534] hover:text-rose-700 flex items-center justify-center transition-colors shrink-0"
-                title={language === "mr" ? "बाहेर पडा (Sign Out)" : "Sign Out"}
+                title={tH("signOut")}
               >
                 <LogOut className="w-3.5 h-3.5" />
               </button>
@@ -315,28 +317,22 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
               className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-full bg-[#166534] hover:bg-[#15803d] text-white text-[11px] sm:text-xs font-extrabold transition-all shadow-2xs hover:scale-105 active:scale-95"
             >
               <UserCheck className="w-3.5 h-3.5" />
-              <span>{language === "mr" ? "लॉगिन / प्रवेश" : "Login Portal"}</span>
+              <span>{tH("login")}</span>
             </button>
           )}
         </div>
       </header>
 
       {/* ========================================================= */}
-      {/* MOBILE FULL-SCREEN SLIDE-OUT DRAWER */}
+      {/* MOBILE FULL-SCREEN SLIDE-OUT DRAWER (OUTSIDE HEADER) */}
       {/* ========================================================= */}
       {showMobileMenu && (
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-xs flex md:hidden">
-          {/* Drawer Panel */}
           <div className="bg-[#eaf1ea] w-[290px] max-w-[85vw] h-full border-r border-[#c3d6c4] shadow-2xl p-4 sm:p-5 flex flex-col justify-between overflow-y-auto animate-in slide-in-from-left duration-200">
             <div className="space-y-4">
               {/* Drawer Header */}
               <div className="flex items-center justify-between pb-3 border-b border-[#c8d9c8]">
-                <Link
-                  href="/"
-                  onClick={() => setShowMobileMenu(false)}
-                  className="flex items-center gap-2 hover:opacity-90 transition-opacity"
-                  title="Go to Home / Landing Page"
-                >
+                <Link href="/" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-xl bg-[#166534] text-white flex items-center justify-center shadow-xs">
                     <Sprout className="w-4 h-4 text-emerald-100" />
                   </div>
@@ -345,7 +341,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                       MeghDrishti
                     </span>
                     <span className="text-[10px] font-bold text-[#166534] uppercase tracking-wider block">
-                      {language === "mr" ? "स्थानिक हवामान प्रणाली" : "Panchayat Weather AI"}
+                      {tH("subtitle")}
                     </span>
                   </div>
                 </Link>
@@ -353,7 +349,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                 <button
                   onClick={() => setShowMobileMenu(false)}
                   className="w-8 h-8 rounded-xl bg-[#d5e4d5] hover:bg-[#c6d9c6] text-[#166534] flex items-center justify-center transition-colors"
-                  aria-label="Close menu"
+                  aria-label={tH("closeMenu")}
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -370,10 +366,10 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] uppercase font-black text-[#166534]">
-                      {language === "mr" ? user.roleTitleMr : user.roleTitleEn}
+                      {language === "mr" ? user.roleTitleMr : language === "hi" ? user.roleTitleHi : user.roleTitleEn}
                     </span>
                     <span className="text-[9px] font-bold bg-[#166534] text-white px-2 py-0.5 rounded-full">
-                      Active
+                      {tH("active")}
                     </span>
                   </div>
                   <div className="text-xs font-black text-[#0f2918] truncate">{user.name}</div>
@@ -388,16 +384,15 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                   className="w-full py-2.5 px-3 bg-[#166534] text-white rounded-2xl text-xs font-black flex items-center justify-center gap-2 shadow-xs"
                 >
                   <UserCheck className="w-4 h-4" />
-                  <span>{language === "mr" ? "शेतकरी / अधिकारी लॉगिन" : "Farmer / Officer Login"}</span>
+                  <span>{tL("signIn")}</span>
                 </button>
               )}
 
-              {/* Navigation Menu List in Drawer */}
+              {/* Navigation List */}
               <nav className="space-y-1">
                 {allNavItems.map((item) => {
                   const Icon = item.icon;
                   const active = pathname === item.href;
-                  const label = language === "mr" ? item.labelMr : item.labelEn;
 
                   return (
                     <Link
@@ -405,17 +400,14 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                       href={item.href}
                       onClick={() => setShowMobileMenu(false)}
                       className={cn(
-                        "flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all",
+                        "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all",
                         active
                           ? "bg-[#166534] text-white shadow-xs font-black"
-                          : "text-[#0f2918] hover:bg-[#dbe8db]"
+                          : "text-[#0f2918] hover:bg-[#d7ead9] border border-transparent"
                       )}
                     >
-                      <div className="flex items-center gap-2.5">
-                        <Icon className={cn("w-4 h-4", active ? "text-white" : "text-[#166534]")} />
-                        <span>{label}</span>
-                      </div>
-                      {active && <ChevronRight className="w-3.5 h-3.5 text-white/80" />}
+                      <Icon className={cn("w-4 h-4 shrink-0", active ? "text-white" : "text-[#166534]")} />
+                      <span className="truncate">{item.label}</span>
                     </Link>
                   );
                 })}
@@ -423,16 +415,13 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
             </div>
 
             {/* Drawer Footer */}
-            <div className="pt-3 border-t border-[#c8d9c8] text-[11px] text-[#2b4c34] font-bold space-y-1">
-              <div className="flex items-center justify-between">
-                <span>Smart India Hackathon 2026</span>
-                <span className="text-[#166534] font-black">1 km AI</span>
+            <div className="pt-4 border-t border-[#c8d9c8] space-y-2">
+              <div className="text-[10px] text-[#2b4c34] font-bold text-center">
+                {tH("footerNote")}
               </div>
-              <p className="text-[10px] text-[#2b4c34]/70">Panchayat-level downscaled weather</p>
             </div>
           </div>
 
-          {/* Clickable Backdrop to Close */}
           <div
             className="flex-1"
             onClick={() => setShowMobileMenu(false)}
@@ -442,7 +431,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
       )}
 
       {/* ========================================================= */}
-      {/* FULL SUPABASE DUAL AUTHENTICATION MODAL */}
+      {/* SUPABASE DUAL LOGIN / REGISTER MODAL */}
       {/* ========================================================= */}
       {showLoginModal && (
         <div className="fixed inset-0 z-[100] bg-black/65 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
@@ -452,16 +441,16 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-black text-[#166534] uppercase tracking-widest block">
-                    Supabase Dual Auth Portal
+                    {tH("portalAccess")}
                   </span>
                   <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-black border border-emerald-300">
-                    Online
+                    Supabase
                   </span>
                 </div>
                 <h3 className="text-base sm:text-lg font-black text-[#0f2918] mt-0.5">
                   {loginRoleTab === "farmer"
-                    ? language === "mr" ? "👨‍🌾 शेतकरी पोर्टल (Kisan Auth)" : "👨‍🌾 Farmer Authentication"
-                    : language === "mr" ? "🏛️ कृषी अधिकारी पोर्टल (Officer Auth)" : "🏛️ Officer Authentication"}
+                    ? t("👨‍🌾 शेतकरी लॉगिन व नोंदणी", "👨‍🌾 किसान लॉगिन और पंजीकरण", "👨‍🌾 Farmer Authentication")
+                    : t("🏛️ कृषी अधिकारी पोर्टल", "🏛️ कृषि अधिकारी पोर्टल", "🏛️ Officer Authentication")}
                 </h3>
               </div>
               <button
@@ -488,7 +477,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                 )}
               >
                 <Sprout className="w-4 h-4" />
-                <span>{language === "mr" ? "शेतकरी (Farmer)" : "Farmer Portal"}</span>
+                <span>{tL("farmerTab")}</span>
               </button>
 
               <button
@@ -505,7 +494,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                 )}
               >
                 <Shield className="w-4 h-4" />
-                <span>{language === "mr" ? "कृषी अधिकारी (Officer)" : "Officer Portal"}</span>
+                <span>{tL("officerTab")}</span>
               </button>
             </div>
 
@@ -522,7 +511,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                   authMode === "signin" ? "bg-[#166534] text-white shadow-xs" : "text-[#166534] hover:bg-[#cde0cd]"
                 )}
               >
-                {language === "mr" ? "लॉगिन (Sign In)" : "Sign In"}
+                {t("लॉगिन (Sign In)", "लॉगिन (Sign In)", "Sign In")}
               </button>
               <button
                 type="button"
@@ -535,7 +524,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                   authMode === "signup" ? "bg-[#166534] text-white shadow-xs" : "text-[#166534] hover:bg-[#cde0cd]"
                 )}
               >
-                {language === "mr" ? "नवीन नोंदणी (Register)" : "Register (Sign Up)"}
+                {t("नवीन नोंदणी (Register)", "नया पंजीकरण (Register)", "Register (Sign Up)")}
               </button>
             </div>
 
@@ -561,13 +550,13 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                   <>
                     <div className="space-y-1">
                       <label className="block font-black text-[#0f2918]">
-                        {language === "mr" ? "शेतकऱ्याचे पूर्ण नाव" : "Farmer Full Name"}
+                        {tL("farmerName")}
                       </label>
                       <input
                         type="text"
                         value={farmerName}
                         onChange={(e) => setFarmerName(e.target.value)}
-                        placeholder="उदा. रमेश तुकाराम पाटील"
+                        placeholder={t("उदा. रमेश तुकाराम पाटील", "उदा. रमेश तुकाराम पाटिल", "e.g. Ramesh Tukaram Patil")}
                         className="w-full bg-[#dbe8db] border border-[#c3d6c4] rounded-xl px-3 py-2 text-xs font-bold text-[#0f2918] focus:outline-none focus:ring-2 focus:ring-[#166534]"
                         required
                       />
@@ -575,7 +564,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
 
                     <div className="space-y-1">
                       <label className="block font-black text-[#0f2918]">
-                        {language === "mr" ? "गाव / ग्रामपंचायत निवडा" : "Select Gram Panchayat"}
+                        {t("गाव / ग्रामपंचायत निवडा", "गाँव / ग्राम पंचायत चुनें", "Select Gram Panchayat")}
                       </label>
                       <select
                         value={farmerVillage}
@@ -592,7 +581,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
 
                     <div className="space-y-1">
                       <label className="block font-black text-[#0f2918]">
-                        {language === "mr" ? "मुख्य पिके (Crops Grown)" : "Select Crops Grown"}
+                        {t("मुख्य पिके (Crops Grown)", "मुख्य फसलें (Crops Grown)", "Select Crops Grown")}
                       </label>
                       <div className="flex flex-wrap gap-1.5 pt-0.5">
                         {["Cotton", "Soybean", "Onion", "Wheat", "Sugarcane", "Maize"].map((crop) => (
@@ -617,7 +606,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
 
                 <div className="space-y-1">
                   <label className="block font-black text-[#0f2918]">
-                    {language === "mr" ? "मोबाईल नंबर" : "Mobile Phone Number"}
+                    {tL("mobileNumber")}
                   </label>
                   <div className="relative">
                     <input
@@ -634,7 +623,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
 
                 <div className="space-y-1">
                   <label className="block font-black text-[#0f2918]">
-                    {language === "mr" ? "४-अंकी सुरक्षा पिन (PIN)" : "4-Digit Security PIN"}
+                    {tL("pin")}
                   </label>
                   <div className="relative">
                     <input
@@ -656,7 +645,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                     onClick={() => handle1ClickDemo("farmer")}
                     className="w-full sm:w-auto text-[11px] font-black text-[#166534] hover:underline"
                   >
-                    ⚡ {language === "mr" ? "१-क्लिक चाचणी शेतकरी" : "1-Click Demo Farmer"}
+                    ⚡ {tL("demoFarmer")}
                   </button>
 
                   <button
@@ -667,15 +656,15 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                     {authLoading ? (
                       <>
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        <span>{language === "mr" ? "प्रक्रिया सुरू..." : "Authenticating..."}</span>
+                        <span>{t("प्रक्रिया सुरू...", "प्रक्रिया जारी...", "Authenticating...")}</span>
                       </>
                     ) : (
                       <>
                         <CheckCircle className="w-3.5 h-3.5" />
                         <span>
                           {authMode === "signin"
-                            ? language === "mr" ? "शेतकरी प्रवेश" : "Sign In as Farmer"
-                            : language === "mr" ? "शेतकरी नोंदणी करा" : "Register Farmer"}
+                            ? tL("signInFarmer")
+                            : t("शेतकरी नोंदणी करा", "किसान पंजीकरण करें", "Register Farmer")}
                         </span>
                       </>
                     )}
@@ -691,13 +680,13 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                   <>
                     <div className="space-y-1">
                       <label className="block font-black text-[#0f2918]">
-                        {language === "mr" ? "अधिकारी पूर्ण नाव व पद" : "Officer Name & Designation"}
+                        {tL("officerName")}
                       </label>
                       <input
                         type="text"
                         value={officerName}
                         onChange={(e) => setOfficerName(e.target.value)}
-                        placeholder="उदा. डॉ. अनिरुद्ध देशमुख"
+                        placeholder={t("उदा. डॉ. अनिरुद्ध देशमुख", "उदा. डॉ. अनिरुद्ध देशमुख", "e.g. Dr. Aniruddha Deshmukh")}
                         className="w-full bg-[#dbe8db] border border-[#c3d6c4] rounded-xl px-3 py-2 text-xs font-bold text-[#0f2918] focus:outline-none focus:ring-2 focus:ring-[#1d3557]"
                         required
                       />
@@ -705,7 +694,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
 
                     <div className="space-y-1">
                       <label className="block font-black text-[#0f2918]">
-                        {language === "mr" ? "शासकीय ईमेल पत्ता" : "Official Govt Email"}
+                        {t("शासकीय ईमेल पत्ता", "सरकारी ईमेल पता", "Official Govt Email")}
                       </label>
                       <div className="relative">
                         <input
@@ -722,13 +711,13 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
 
                     <div className="space-y-1">
                       <label className="block font-black text-[#0f2918]">
-                        {language === "mr" ? "विभाग / नोडल केंद्र" : "Department / Nodal Division"}
+                        {t("विभाग / नोडल केंद्र", "विभाग / नोडल केंद्र", "Department / Nodal Division")}
                       </label>
                       <input
                         type="text"
                         value={officerDept}
                         onChange={(e) => setOfficerDept(e.target.value)}
-                        placeholder="उदा. District Agriculture Division"
+                        placeholder="District Agriculture Division"
                         className="w-full bg-[#dbe8db] border border-[#c3d6c4] rounded-xl px-3 py-2 text-xs font-bold text-[#0f2918] focus:outline-none focus:ring-2 focus:ring-[#1d3557]"
                       />
                     </div>
@@ -737,7 +726,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
 
                 <div className="space-y-1">
                   <label className="block font-black text-[#0f2918]">
-                    {language === "mr" ? "शासकीय नोडल आयडी (Govt Nodal ID)" : "Govt Officer ID / Nodal ID"}
+                    {tL("officerId")}
                   </label>
                   <div className="relative">
                     <input
@@ -754,7 +743,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
 
                 <div className="space-y-1">
                   <label className="block font-black text-[#0f2918]">
-                    {language === "mr" ? "विभागीय पासवर्ड (Password)" : "Department Password"}
+                    {tL("password")}
                   </label>
                   <div className="relative">
                     <input
@@ -775,7 +764,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                     onClick={() => handle1ClickDemo("officer")}
                     className="w-full sm:w-auto text-[11px] font-black text-[#1d3557] hover:underline"
                   >
-                    ⚡ {language === "mr" ? "१-क्लिक चाचणी अधिकारी" : "1-Click Demo Officer"}
+                    ⚡ {tL("demoOfficer")}
                   </button>
 
                   <button
@@ -786,15 +775,15 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                     {authLoading ? (
                       <>
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        <span>{language === "mr" ? "प्रक्रिया सुरू..." : "Authenticating..."}</span>
+                        <span>{t("प्रक्रिया सुरू...", "प्रक्रिया जारी...", "Authenticating...")}</span>
                       </>
                     ) : (
                       <>
                         <CheckCircle className="w-3.5 h-3.5" />
                         <span>
                           {authMode === "signin"
-                            ? language === "mr" ? "अधिकारी प्रवेश" : "Sign In as Officer"
-                            : language === "mr" ? "अधिकारी नोंदणी करा" : "Register Officer"}
+                            ? tL("signInOfficer")
+                            : t("अधिकारी नोंदणी करा", "अधिकारी पंजीकरण करें", "Register Officer")}
                         </span>
                       </>
                     )}

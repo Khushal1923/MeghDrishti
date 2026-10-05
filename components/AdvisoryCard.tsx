@@ -16,6 +16,7 @@ import {
 import { CropAdvisory } from "@/lib/types";
 import { TrustBadge } from "./TrustBadge";
 import { useLanguage } from "@/lib/LanguageContext";
+import { tx } from "@/lib/t";
 
 interface AdvisoryCardProps {
   advisory: CropAdvisory;
@@ -28,62 +29,63 @@ interface CropMeta {
   id: string;
   en: string;
   mr: string;
+  hi: string;
 }
 
 const CROPS: CropMeta[] = [
-  { id: "Cotton", en: "Cotton", mr: "कापूस" },
-  { id: "Soybean", en: "Soybean", mr: "सोयाबीन" },
-  { id: "Maize", en: "Maize", mr: "मका" },
-  { id: "Onion", en: "Onion", mr: "कांदा" },
-  { id: "Tomato", en: "Tomato", mr: "टोमॅटो" },
-  { id: "Sugarcane", en: "Sugarcane", mr: "ऊस" },
-  { id: "Wheat", en: "Wheat", mr: "गहू" },
+  { id: "Cotton",    en: "Cotton",    mr: "कापूस",    hi: "कपास" },
+  { id: "Soybean",   en: "Soybean",   mr: "सोयाबीन",  hi: "सोयाबीन" },
+  { id: "Maize",    en: "Maize",     mr: "मका",      hi: "मक्का" },
+  { id: "Onion",    en: "Onion",     mr: "कांदा",    hi: "प्याज" },
+  { id: "Tomato",   en: "Tomato",    mr: "टोमॅटो",   hi: "टमाटर" },
+  { id: "Sugarcane",en: "Sugarcane", mr: "ऊस",       hi: "गन्ना" },
+  { id: "Wheat",    en: "Wheat",     mr: "गहू",      hi: "गेहूं" },
 ];
 
-const STAGES_MAP: Record<string, { en: string; mr: string }[]> = {
+const STAGES_MAP: Record<string, { en: string; mr: string; hi: string }[]> = {
   Cotton: [
-    { en: "Sowing / Seedling", mr: "पेरणी / उगवण अवस्था" },
-    { en: "Vegetative Growth", mr: "शाकीय वाढ अवस्था" },
-    { en: "Flowering / Square Formation", mr: "पात्या व फुले येण्याची अवस्था" },
-    { en: "Boll Formation / Development", mr: "बोंड भरण्याची अवस्था" },
-    { en: "Boll Bursting / Harvesting", mr: "बोंड फुटणे / वेचणी" },
+    { en: "Sowing / Seedling",           mr: "पेरणी / उगवण अवस्था",             hi: "बुवाई / पौध" },
+    { en: "Vegetative Growth",            mr: "शाकीय वाढ अवस्था",                hi: "वानस्पतिक वृद्धि" },
+    { en: "Flowering / Square Formation", mr: "पात्या व फुले येण्याची अवस्था",   hi: "फूल / कली अवस्था" },
+    { en: "Boll Formation / Development", mr: "बोंड भरण्याची अवस्था",            hi: "बोल निर्माण" },
+    { en: "Boll Bursting / Harvesting",   mr: "बोंड फुटणे / वेचणी",              hi: "बोल फटना / कटाई" },
   ],
   Soybean: [
-    { en: "Sowing / Germination", mr: "पेरणी व उगवण" },
-    { en: "Vegetative / Branching", mr: "फांद्या फुटण्याची अवस्था" },
-    { en: "Flowering Stage", mr: "फुलोरा अवस्था" },
-    { en: "Pod Formation & Filling", mr: "शेंगा भरणे व दाणे पोसणे" },
-    { en: "Maturity / Harvesting", mr: "कापणी / मळणी" },
+    { en: "Sowing / Germination",     mr: "पेरणी व उगवण",             hi: "बुवाई / अंकुरण" },
+    { en: "Vegetative / Branching",   mr: "फांद्या फुटण्याची अवस्था", hi: "वानस्पतिक / शाखाएं" },
+    { en: "Flowering Stage",          mr: "फुलोरा अवस्था",            hi: "फूल अवस्था" },
+    { en: "Pod Formation & Filling",  mr: "शेंगा भरणे व दाणे पोसणे", hi: "फली निर्माण" },
+    { en: "Maturity / Harvesting",    mr: "कापणी / मळणी",             hi: "परिपक्वता / कटाई" },
   ],
   Maize: [
-    { en: "Knee High Stage", mr: "गुडघाभर वाढ" },
-    { en: "Tasseling & Silking", mr: "तुरा व कणसाचे केस बाहेर पडणे" },
-    { en: "Grain Filling (Milk stage)", mr: "दाणे भरणे (दुधाळ अवस्था)" },
-    { en: "Maturity / Harvest", mr: "कापणी" },
+    { en: "Knee High Stage",           mr: "गुडघाभर वाढ",                      hi: "घुटने तक बढ़वार" },
+    { en: "Tasseling & Silking",       mr: "तुरा व कणसाचे केस बाहेर पडणे",   hi: "नर-मंजरी और रेशम" },
+    { en: "Grain Filling (Milk stage)",mr: "दाणे भरणे (दुधाळ अवस्था)",       hi: "दाना भरना (दूधिया)" },
+    { en: "Maturity / Harvest",        mr: "कापणी",                            hi: "परिपक्वता / कटाई" },
   ],
   Onion: [
-    { en: "Nursery / Transplanting", mr: "रोपवाटिका / पुनर्लागवड" },
-    { en: "Vegetative Growth", mr: "पातीची वाढ" },
-    { en: "Bulb Development", mr: "कांदा पोसणे (कंद विकास)" },
-    { en: "Maturity / Harvesting", mr: "काढणी / सुकवणे" },
+    { en: "Nursery / Transplanting", mr: "रोपवाटिका / पुनर्लागवड", hi: "नर्सरी / रोपाई" },
+    { en: "Vegetative Growth",       mr: "पातीची वाढ",              hi: "वानस्पतिक वृद्धि" },
+    { en: "Bulb Development",        mr: "कांदा पोसणे (कंद विकास)", hi: "कंद विकास" },
+    { en: "Maturity / Harvesting",   mr: "काढणी / सुकवणे",          hi: "परिपक्वता / खुदाई" },
   ],
   Tomato: [
-    { en: "Transplanting", mr: "पुनर्लागवड" },
-    { en: "Vegetative / Staking", mr: "फांद्यांची वाढ / बांधणी" },
-    { en: "Flowering & Fruit Set", mr: "फुलोरा व फळधारणा" },
-    { en: "Fruit Maturation & Picking", mr: "फळ काढणी (तोडा)" },
+    { en: "Transplanting",           mr: "पुनर्लागवड",           hi: "रोपाई" },
+    { en: "Vegetative / Staking",    mr: "फांद्यांची वाढ / बांधणी", hi: "बढ़वार / बांधना" },
+    { en: "Flowering & Fruit Set",   mr: "फुलोरा व फळधारणा",    hi: "फूल और फल निर्माण" },
+    { en: "Fruit Maturation & Picking", mr: "फळ काढणी (तोडा)",  hi: "फल पकना / तुड़ाई" },
   ],
   Sugarcane: [
-    { en: "Germination (0-45 days)", mr: "उगवण काळ (०-४५ दिवस)" },
-    { en: "Tillering Stage", mr: "फुटवे फुटण्याची अवस्था" },
-    { en: "Grand Growth (Elongation)", mr: "मोठी वाढ (कांडी भरणे)" },
-    { en: "Ripening & Harvesting", mr: "पक्वता व तोडणी" },
+    { en: "Germination (0-45 days)",  mr: "उगवण काळ (०-४५ दिवस)",    hi: "अंकुरण (0-45 दिन)" },
+    { en: "Tillering Stage",          mr: "फुटवे फुटण्याची अवस्था",  hi: "कल्ले फूटना" },
+    { en: "Grand Growth (Elongation)",mr: "मोठी वाढ (कांडी भरणे)",   hi: "तीव्र वृद्धि (बढ़ाव)" },
+    { en: "Ripening & Harvesting",    mr: "पक्वता व तोडणी",           hi: "पकना और कटाई" },
   ],
   Wheat: [
-    { en: "Crown Root Initiation", mr: "मुकुट मुळे फुटणे (CRI)" },
-    { en: "Tillering / Stem Extension", mr: "फुटवे व कांडी भरणे" },
-    { en: "Heading & Flowering", mr: "ोंबी बाहेर पडणे व फुलोरा" },
-    { en: "Grain Milk / Dough Stage", mr: "दाणे भरणे व पक्वता" },
+    { en: "Crown Root Initiation", mr: "मुकुट मुळे फुटणे (CRI)", hi: "मुकुट जड़ निर्माण (CRI)" },
+    { en: "Tillering / Stem Extension", mr: "फुटवे व कांडी भरणे", hi: "कल्ले फूटना / तना विस्तार" },
+    { en: "Heading & Flowering", mr: "ओंबी बाहेर पडणे व फुलोरा", hi: "बाली निकलना और फूल" },
+    { en: "Grain Milk / Dough Stage", mr: "दाणे भरणे व पक्वता", hi: "दुधिया दाना व परिपक्वता" },
   ],
 };
 
@@ -110,12 +112,14 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
       let textToSpeak = "";
       if (language === "mr" || advisory.language === "mr") {
         textToSpeak = `${advisory.panchayat_name} शेतकरी सल्ला. पीक ${advisory.crop}, अवस्था ${advisory.stage}. मुख्य सल्ला: ${advisory.recommended_action}. कारण: ${advisory.why}. फवारणी: ${advisory.spray_window || ""}. सिंचन: ${advisory.irrigation_advice || ""}. कीड सावधगिरी: ${advisory.pest_alert || ""} ${advisory.pest_remedy || ""}`;
+      } else if (language === "hi" || advisory.language === "hi") {
+        textToSpeak = `${advisory.panchayat_name} किसान फसल सलाह। फसल ${advisory.crop}, अवस्था ${advisory.stage}। मुख्य सलाह: ${advisory.recommended_action}। कारण: ${advisory.why}। छिड़काव: ${advisory.spray_window || ""}। सिंचाई: ${advisory.irrigation_advice || ""}। कीट चेतावनी: ${advisory.pest_alert || ""} ${advisory.pest_remedy || ""}`;
       } else {
         textToSpeak = `MeghDrishti Farmer Advisory for ${advisory.panchayat_name}. Crop ${advisory.crop}, stage ${advisory.stage}. Recommended Action: ${advisory.recommended_action}. Reason: ${advisory.why}. Spray Window: ${advisory.spray_window || ""}. Irrigation: ${advisory.irrigation_advice || ""}. Pest Alert: ${advisory.pest_alert || ""} ${advisory.pest_remedy || ""}`;
       }
 
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
-      utterance.lang = language === "mr" || advisory.language === "mr" ? "mr-IN" : "en-IN";
+      utterance.lang = language === "mr" || advisory.language === "mr" ? "mr-IN" : language === "hi" || advisory.language === "hi" ? "hi-IN" : "en-IN";
       utterance.rate = 0.9;
       utterance.onend = () => setIsSpeaking(false);
       utterance.onerror = () => setIsSpeaking(false);
@@ -128,6 +132,8 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
     let msg = "";
     if (language === "mr") {
       msg = `*मेघदृष्टी ग्रामपंचायत शेतकरी सल्ला*\n*गाव:* ${advisory.panchayat_name}\n*पीक:* ${advisory.crop} (${advisory.stage})\n*अपेक्षित पाऊस:* ${advisory.forecast_rainfall_mm} मिमी\n\n*मुख्य सल्ला:* ${advisory.recommended_action}\n*कारण:* ${advisory.why}\n*फवारणी:* ${advisory.spray_window || "योग्य वेळ"}\n*सिंचन:* ${advisory.irrigation_advice || "नेहमीप्रमाणे"}\n*कीड नियंत्रण:* ${advisory.pest_alert || ""} - ${advisory.pest_remedy || ""}\n\n_मेघदृष्टी १ किमी अचूक स्थानिक हवामान प्रणाली_`;
+    } else if (language === "hi") {
+      msg = `*मेघदृष्टि ग्राम पंचायत किसान सलाह*\n*गाँव:* ${advisory.panchayat_name}\n*फसल:* ${advisory.crop} (${advisory.stage})\n*अपेक्षित वर्षा:* ${advisory.forecast_rainfall_mm} मिमी\n\n*मुख्य सलाह:* ${advisory.recommended_action}\n*कारण:* ${advisory.why}\n*छिड़काव:* ${advisory.spray_window || "उचित समय"}\n*सिंचाई:* ${advisory.irrigation_advice || "नियमित"}\n*कीट नियंत्रण:* ${advisory.pest_alert || ""} - ${advisory.pest_remedy || ""}\n\n_मेघदृष्टि 1 किमी स्थानिक मौसम AI प्रणाली_`;
     } else {
       msg = `*MeghDrishti Panchayat Farmer Advisory*\n*Hub:* ${advisory.panchayat_name}\n*Crop:* ${advisory.crop} (${advisory.stage})\n*Expected Rain:* ${advisory.forecast_rainfall_mm} mm\n\n*Action:* ${advisory.recommended_action}\n*Reason:* ${advisory.why}\n*Spray Window:* ${advisory.spray_window || "Safe window"}\n*Irrigation:* ${advisory.irrigation_advice || "Regular schedule"}\n*Pest Alert:* ${advisory.pest_alert || ""} - ${advisory.pest_remedy || ""}\n\n_MeghDrishti 1km AI Weather Intelligence_`;
     }
@@ -148,10 +154,10 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
       <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#c8d9c8]">
         <div>
           <h3 className="text-base md:text-lg font-black text-[#0f2918] leading-tight">
-            {language === "mr" ? "शेतकरी पीक सल्ला व कृती निर्णय" : "Crop Advisory & Farmer Action"}
+            {tx(language, "advisoryTitle")}
           </h3>
           <p className="text-xs text-[#2b4c34] font-bold mt-0.5">
-            {language === "mr" ? "स्थानिक मार्गदर्शन:" : "Actionable guidance for"}{" "}
+            {tx(language, "advisoryFor")}{" "}
             <strong className="text-[#166534] font-black">{advisory.panchayat_name}</strong>
           </p>
         </div>
@@ -169,15 +175,7 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
             title="Listen to Voice Advisory"
           >
             {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-            <span>
-              {language === "mr"
-                ? isSpeaking
-                  ? "थांबवा"
-                  : "आवाज ऐका"
-                : isSpeaking
-                ? "Stop"
-                : "Voice Readout"}
-            </span>
+            <span>{isSpeaking ? tx(language, "voiceStop") : tx(language, "voiceRead")}</span>
           </button>
 
           {/* WhatsApp Share Button */}
@@ -191,15 +189,7 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
             ) : (
               <MessageCircle className="w-4 h-4 text-[#166534]" />
             )}
-            <span>
-              {copied
-                ? language === "mr"
-                  ? "कॉपी झाले!"
-                  : "Copied!"
-                : language === "mr"
-                ? "WhatsApp वर पाठवा"
-                : "Share WhatsApp"}
-            </span>
+            <span>{copied ? tx(language, "copied") : tx(language, "shareWhatsApp")}</span>
           </button>
         </div>
       </div>
@@ -207,13 +197,13 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
       {/* Crop Selector (Clean Text Pill Buttons) */}
       <div className="space-y-1.5">
         <label className="block text-xs font-black text-[#0f2918] uppercase tracking-wider">
-          {language === "mr" ? "पीक निवडा" : "Select Crop"}
+          {tx(language, "selectCrop")}
         </label>
 
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 max-w-full">
           {CROPS.map((c) => {
             const isSelected = advisory.crop === c.id;
-            const label = language === "mr" ? c.mr : c.en;
+            const label = language === "mr" ? c.mr : language === "hi" ? c.hi : c.en;
             return (
               <button
                 key={c.id}
@@ -234,7 +224,7 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
       {/* Growth Stage Selector */}
       <div className="space-y-1">
         <label className="block text-xs font-black text-[#0f2918] uppercase tracking-wider">
-          {language === "mr" ? "पिकाची सद्य अवस्था (Growth Stage)" : "Current Growth Stage"}
+          {tx(language, "growthStage")}
         </label>
         <select
           value={advisory.stage}
@@ -243,7 +233,7 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
         >
           {activeCropStages.map((s) => (
             <option key={s.en} value={s.en}>
-              {language === "mr" ? s.mr : s.en}
+              {language === "mr" ? s.mr : language === "hi" ? s.hi : s.en}
             </option>
           ))}
         </select>
@@ -256,7 +246,7 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
           <div className="flex items-center justify-between">
             <span className="text-[10px] text-[#166534] font-black uppercase flex items-center gap-1">
               <Clock className="w-3 h-3 text-[#166534]" />
-              {language === "mr" ? "फवारणी काळ" : "Spray Window"}
+              {tx(language, "sprayWindow")}
             </span>
             <span
               className={`px-2 py-0.5 rounded-full text-[9px] font-black ${
@@ -268,21 +258,14 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
               }`}
             >
               {advisory.spray_status === "AVOID"
-                ? language === "mr"
-                  ? "थांबवा"
-                  : "HOLD"
+                ? tx(language, "hold")
                 : advisory.spray_status === "CAUTION"
-                ? language === "mr"
-                  ? "सावध"
-                  : "CAUTION"
-                : language === "mr"
-                ? "योग्य वेळ"
-                : "SAFE"}
+                ? tx(language, "caution")
+                : tx(language, "safe")}
             </span>
           </div>
           <p className="text-xs font-black text-[#0f2918] leading-tight">
-            {advisory.spray_window ||
-              (language === "mr" ? "सकाळी ७ ते ११ वाऱ्याचा वेग कमी असताना" : "7:00 AM - 11:00 AM (Calm winds)")}
+            {advisory.spray_window || tx(language, "defaultSpray")}
           </p>
         </div>
 
@@ -291,7 +274,7 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
           <div className="flex items-center justify-between">
             <span className="text-[10px] text-[#166534] font-black uppercase flex items-center gap-1">
               <Droplets className="w-3 h-3 text-[#166534]" />
-              {language === "mr" ? "सिंचन नियोजन" : "Irrigation"}
+              {tx(language, "irrigation")}
             </span>
             <span
               className={`px-2 py-0.5 rounded-full text-[9px] font-black ${
@@ -300,18 +283,11 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
                   : "bg-sky-100 text-sky-800 border border-sky-300"
               }`}
             >
-              {advisory.irrigation_status === "STOP"
-                ? language === "mr"
-                  ? "पाणी बंद"
-                  : "STOP"
-                : language === "mr"
-                ? "पाणी द्या"
-                : "IRRIGATE"}
+              {advisory.irrigation_status === "STOP" ? tx(language, "stop") : tx(language, "irrigate")}
             </span>
           </div>
           <p className="text-xs font-black text-[#0f2918] leading-tight">
-            {advisory.irrigation_advice ||
-              (language === "mr" ? "हलके ठिबक सिंचन चालू ठेवा" : "Apply scheduled light irrigation")}
+            {advisory.irrigation_advice || tx(language, "defaultIrrigation")}
           </p>
         </div>
 
@@ -320,12 +296,11 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
           <div className="flex items-center justify-between">
             <span className="text-[10px] text-[#166534] font-black uppercase flex items-center gap-1">
               <FlaskConical className="w-3 h-3 text-[#166534]" />
-              {language === "mr" ? "खत सल्ला" : "Fertilizer"}
+              {tx(language, "fertilizer")}
             </span>
           </div>
           <p className="text-xs font-black text-[#0f2918] leading-tight truncate">
-            {advisory.fertilizer_advice ||
-              (language === "mr" ? "१९:१९:१९ विद्राव्य खत फवारा" : "Foliar 19:19:19 spray")}
+            {advisory.fertilizer_advice || tx(language, "defaultFertilizer")}
           </p>
         </div>
       </div>
@@ -334,7 +309,7 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
       <div className="p-4 rounded-2xl bg-[#d7ead9] border border-[#a7d4ac] space-y-2">
         <div className="flex items-center gap-2 text-[#166534] font-black text-xs uppercase tracking-wider">
           <CheckCircle className="w-4 h-4 text-[#166534] shrink-0" />
-          <span>{language === "mr" ? "आजचा मुख्य कृती सल्ला" : "Today's Recommended Action"}</span>
+          <span>{tx(language, "todayAction")}</span>
         </div>
         <p className="text-sm md:text-base font-black text-[#0f2918] leading-relaxed pl-6">
           {advisory.recommended_action}
@@ -345,7 +320,7 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
       <div className="p-3.5 rounded-2xl bg-[#e6efe6] border border-[#c3d6c4] space-y-1">
         <div className="flex items-center gap-2 text-[#0f2918] font-black text-xs uppercase tracking-wider">
           <HelpCircle className="w-4 h-4 text-[#166534] shrink-0" />
-          <span>{language === "mr" ? "वैज्ञानिक कारण (Reason)" : "Agronomic Reason"}</span>
+          <span>{tx(language, "agronomicReason")}</span>
         </div>
         <p className="text-xs font-bold text-[#0f2918] leading-relaxed pl-6">
           {advisory.why}
@@ -357,7 +332,7 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
         <div className="p-3 rounded-2xl bg-[#fef3c7] border border-[#fde68a] space-y-1">
           <div className="flex items-center gap-2 text-amber-900 font-black text-xs uppercase tracking-wider">
             <Bug className="w-4 h-4 text-amber-800 shrink-0" />
-            <span>{language === "mr" ? "कीड व रोग सावधगिरी" : "Pest & Disease Alert"}</span>
+            <span>{tx(language, "pestAlert")}</span>
           </div>
           <p className="text-xs font-black text-amber-950 leading-relaxed pl-6">
             <strong>{advisory.pest_alert}</strong> &bull;{" "}
@@ -369,7 +344,7 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
       {/* Footer / Soil Calibration */}
       <div className="text-xs text-[#0f2918] font-bold flex items-center justify-between pt-2 border-t border-[#c8d9c8]">
         <span>
-          {language === "mr" ? "स्थानिक मातीच्या ओलाव्यानुसार अचूक • अवस्था:" : "Calibrated for local soil moisture • Stage:"}{" "}
+          {tx(language, "soilCalib")}{" "}
           <strong className="text-[#166534] font-black">{advisory.stage}</strong>
         </span>
         <TrustBadge level={advisory.trust_level} />

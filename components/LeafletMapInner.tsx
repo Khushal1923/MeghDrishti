@@ -5,7 +5,8 @@ import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaf
 import L from "leaflet";
 import { Panchayat } from "@/lib/types";
 import { formatRainfall, formatTemp } from "@/lib/utils";
-import { useLanguage, type Language } from "@/lib/LanguageContext";
+import { type Language } from "@/lib/LanguageContext";
+import { tx } from "@/lib/t";
 import "leaflet/dist/leaflet.css";
 
 interface LeafletMapInnerProps {
@@ -33,7 +34,6 @@ function MapController({
   useEffect(() => {
     if (!map) return;
 
-    // If zone filter changed, always fit bounds of that zone
     if (prevZoneRef.current !== zoneFilter) {
       prevZoneRef.current = zoneFilter;
       if (filtered.length > 0) {
@@ -45,10 +45,8 @@ function MapController({
       }
     }
 
-    // If selected panchayat changed
     if (selectedPanchayat && prevLgdRef.current !== selectedPanchayat.lgd_code) {
       prevLgdRef.current = selectedPanchayat.lgd_code;
-      // If current view already contains the panchayat, smoothly pan to it
       map.flyTo([selectedPanchayat.latitude, selectedPanchayat.longitude], 8, {
         animate: true,
         duration: 1.0,
@@ -127,7 +125,7 @@ export default function LeafletMapInner({
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="bg-[#e6efe6] p-1.5 rounded-lg border border-[#c3d6c4]">
                     <span className="text-[9px] text-[#166534] font-black block uppercase">
-                      {language === "mr" ? "पाऊस" : "Rainfall"}
+                      {tx(language, "rain")}
                     </span>
                     <strong className="text-[#166534] text-xs font-black">
                       {formatRainfall(p.latest_rainfall_estimate)}
@@ -135,7 +133,7 @@ export default function LeafletMapInner({
                   </div>
                   <div className="bg-[#e6efe6] p-1.5 rounded-lg border border-[#c3d6c4]">
                     <span className="text-[9px] text-[#0f2918] font-black block uppercase">
-                      {language === "mr" ? "तापमान" : "Temperature"}
+                      {tx(language, "temperature")}
                     </span>
                     <strong className="text-[#0f2918] text-xs font-black">
                       {formatTemp(p.latest_temp_estimate)}
@@ -145,13 +143,13 @@ export default function LeafletMapInner({
 
                 <div className="pt-1 flex items-center justify-between border-t border-[#c8d9c8]">
                   <span className="text-[10px] font-black text-[#166534]">
-                    {Math.round(p.trust_score * 100)}% {language === "mr" ? "विश्वास" : "Trust"}
+                    {Math.round(p.trust_score * 100)}% {tx(language, "trust")}
                   </span>
                   <button
                     onClick={() => onSelectPanchayat && onSelectPanchayat(p.lgd_code)}
                     className="text-[10px] font-black px-2 py-0.5 rounded-full bg-[#166534] text-white hover:bg-[#15803d] shadow-2xs"
                   >
-                    {language === "mr" ? "केंद्र निवडा" : "Select Hub"} &rarr;
+                    {tx(language, "selectHub")}
                   </button>
                 </div>
               </div>

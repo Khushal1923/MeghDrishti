@@ -4,12 +4,13 @@ import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { Panchayat } from "@/lib/types";
 import { useLanguage } from "@/lib/LanguageContext";
+import { tx } from "@/lib/t";
 
 const LeafletMapInner = dynamic(() => import("./LeafletMapInner"), {
   ssr: false,
   loading: () => (
     <div className="w-full h-[280px] bg-[#e4eee4] rounded-2xl border border-[#c3d6c4] animate-pulse flex items-center justify-center text-xs text-[#166534] font-black">
-      Loading Panchayat Spatial Intelligence Map...
+      Loading…
     </div>
   ),
 });
@@ -41,16 +42,16 @@ export const PanchayatMap: React.FC<PanchayatMapProps> = ({
   const selectedPanchayat = panchayats.find((p) => p.lgd_code === selectedLgd);
 
   const zoneTabs = [
-    { id: "All", en: "All", mr: "सर्व" },
-    { id: "Maharashtra", en: "Maharashtra", mr: "महाराष्ट्र" },
-    { id: "Karnataka", en: "Karnataka", mr: "कर्नाटक" },
-    { id: "Telangana", en: "Telangana", mr: "तेलंगणा" },
+    { id: "All",         label: tx(language, "zoneAll") },
+    { id: "Maharashtra", label: tx(language, "zoneMH") },
+    { id: "Karnataka",   label: tx(language, "zoneKA") },
+    { id: "Telangana",   label: tx(language, "zoneTS") },
   ];
 
   if (!mounted) {
     return (
       <div className="w-full h-[420px] bg-[#e4eee4] rounded-3xl border border-[#c3d6c4] animate-pulse flex items-center justify-center text-xs text-[#166534] font-black">
-        {language === "mr" ? "स्थानिक नकाशा लोड होत आहे..." : "Loading Panchayat Spatial Intelligence Map..."}
+        {tx(language, "mapLoading")}
       </div>
     );
   }
@@ -62,14 +63,14 @@ export const PanchayatMap: React.FC<PanchayatMapProps> = ({
         <div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-black text-[#166534] uppercase tracking-wider block">
-              {language === "mr" ? "स्थानिक नकाशा बुद्धिमत्ता" : "SPATIAL INTELLIGENCE"}
+              {tx(language, "spatialIntel")}
             </span>
             <span className="px-2 py-0.5 rounded-full bg-[#d7ead9] text-[#166534] text-[10px] font-black border border-[#a7d4ac]">
               1 km Grid
             </span>
           </div>
           <h3 className="text-base font-black text-[#0f2918] tracking-tight mt-0.5">
-            {language === "mr" ? "हवामान केंद्र नेटवर्क (क्लस्टर्स)" : "Panchayat Station Clusters"}
+            {tx(language, "stationClusters")}
           </h3>
         </div>
 
@@ -84,13 +85,13 @@ export const PanchayatMap: React.FC<PanchayatMapProps> = ({
                   : "text-[#166534] hover:text-[#0b1f11]"
               }`}
             >
-              {language === "mr" ? z.mr : z.en}
+              {z.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Leaflet Map with Clean OpenStreetMap Tiles & Dynamic Bounds Controller */}
+      {/* Leaflet Map */}
       <div className="w-full h-[280px] sm:h-[340px] md:h-[400px] rounded-2xl overflow-hidden border border-[#c3d6c4] relative shadow-inner">
         <LeafletMapInner
           panchayats={panchayats}
@@ -102,21 +103,20 @@ export const PanchayatMap: React.FC<PanchayatMapProps> = ({
         />
       </div>
 
-      {/* Map Legend & Validation Summary */}
+      {/* Map Legend */}
       <div className="flex flex-wrap items-center justify-between text-[11px] text-[#0f2918] font-bold pt-1 border-t border-[#c8d9c8]">
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#166534]" /> {language === "mr" ? "उच्च विश्वास (≥८०%)" : "High Trust (≥80%)"}
+            <span className="w-2.5 h-2.5 rounded-full bg-[#166534]" /> {tx(language, "highTrust")}
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#d97706]" /> {language === "mr" ? "मध्यम विश्वास" : "Moderate Trust"}
+            <span className="w-2.5 h-2.5 rounded-full bg-[#d97706]" /> {tx(language, "moderateTrust")}
           </span>
         </div>
         <span className="text-[#166534] font-black">
-          {language === "mr" ? "निवडलेले केंद्र" : "Selected"}: {selectedPanchayat?.village_name || "Wagholi"}
+          {tx(language, "selected")}: {selectedPanchayat?.village_name || "Wagholi"}
         </span>
       </div>
     </div>
   );
 };
-
