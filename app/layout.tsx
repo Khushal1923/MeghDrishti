@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 };
 
 import { LanguageProvider } from "@/lib/LanguageContext";
+import { AuthProvider } from "@/lib/AuthContext";
 
 export default function RootLayout({
   children,
@@ -20,10 +21,12 @@ export default function RootLayout({
     <html lang="en">
       <body className="bg-[#edf2ed] text-[#0f2918] min-h-screen flex antialiased">
         <LanguageProvider>
-          <Sidebar />
-          <div className="flex-1 flex flex-col min-w-0 overflow-y-auto pb-20 md:pb-0">
-            {children}
-          </div>
+          <AuthProvider>
+            <Sidebar />
+            <div className="flex-1 flex flex-col min-w-0 overflow-y-auto pb-20 md:pb-0">
+              {children}
+            </div>
+          </AuthProvider>
         </LanguageProvider>
       </body>
     </html>
