@@ -25,7 +25,7 @@ interface NavItem {
 }
 
 const PRIMARY_NAV: NavItem[] = [
-  { key: "nav.dashboard", en: "Dashboard", mr: "डॅशबोर्ड", href: "/", icon: LayoutDashboard },
+  { key: "nav.dashboard", en: "Dashboard", mr: "डॅशबोर्ड", href: "/dashboard", icon: LayoutDashboard },
   { key: "nav.advisory", en: "Crop Advisory", mr: "पीक सल्ला", href: "/advisory", icon: Sprout },
   { key: "nav.forecast", en: "Forecast", mr: "अंदाज", href: "/forecast", icon: CloudSun },
   { key: "nav.comparison", en: "Compare", mr: "तुलना", href: "/comparison", icon: BarChart3 },
@@ -49,7 +49,7 @@ export const Sidebar: React.FC = () => {
         <div>
           {/* Top Header / Logo Section */}
           <div className="h-16 px-4 flex items-center justify-between border-b border-[#c8d9c8]">
-            <Link href="/landing" className="flex items-center gap-3 overflow-hidden" title="Go to Landing Page">
+            <Link href="/" className="flex items-center gap-3 overflow-hidden" title="Go to Home / Landing Page">
               <div className="w-9 h-9 rounded-xl bg-[#166534] text-white flex items-center justify-center shrink-0 shadow-sm shadow-[#166534]/20">
                 <Sprout className="w-5 h-5 text-emerald-100" />
               </div>

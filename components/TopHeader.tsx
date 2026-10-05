@@ -85,7 +85,8 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   };
 
   const allNavItems = [
-    { labelEn: "Dashboard", labelMr: "डॅशबोर्ड", href: "/", icon: LayoutDashboard },
+    { labelEn: "Home / Overview", labelMr: "मुख्य पान (Overview)", href: "/", icon: Globe2 },
+    { labelEn: "Live Dashboard", labelMr: "थेट डॅशबोर्ड", href: "/dashboard", icon: LayoutDashboard },
     { labelEn: "Crop Advisory", labelMr: "पीक सल्ला", href: "/advisory", icon: Sprout },
     { labelEn: "Weather Forecast", labelMr: "हवामान अंदाज", href: "/forecast", icon: CloudSun },
     { labelEn: "Forecast Compare", labelMr: "अंदाज तुलना", href: "/comparison", icon: BarChart3 },
@@ -95,7 +96,6 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
     { labelEn: "Model & Data Lineage", labelMr: "मॉडेल व डेटा", href: "/models", icon: Layers },
     { labelEn: "System Health", labelMr: "सिस्टम स्थिती", href: "/health", icon: Activity },
     { labelEn: "Calibration Settings", labelMr: "कॅलिब्रेशन सेटिंग्ज", href: "/settings", icon: Settings },
-    { labelEn: "Landing Overview", labelMr: "प्रकल्प माहिती", href: "/landing", icon: Globe2 },
   ];
 
   return (
@@ -113,7 +113,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
             <Menu className="w-5 h-5" />
           </button>
 
-          <Link href="/landing" className="flex items-center gap-2 hover:opacity-90 transition-opacity" title="Go to Landing Page">
+          <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity" title="Go to Home / Landing Page">
             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[#166534] text-white flex items-center justify-center shrink-0 shadow-xs">
               <Sprout className="w-4 h-4 text-emerald-100" />
             </div>
@@ -203,10 +203,10 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
               {/* Drawer Header */}
               <div className="flex items-center justify-between pb-3 border-b border-[#c8d9c8]">
                 <Link
-                  href="/landing"
+                  href="/"
                   onClick={() => setShowMobileMenu(false)}
                   className="flex items-center gap-2 hover:opacity-90 transition-opacity"
-                  title="Go to Landing Page"
+                  title="Go to Home / Landing Page"
                 >
                   <div className="w-8 h-8 rounded-xl bg-[#166534] text-white flex items-center justify-center shadow-xs">
                     <Sprout className="w-4 h-4 text-emerald-100" />
