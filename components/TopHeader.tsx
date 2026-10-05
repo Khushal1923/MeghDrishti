@@ -113,7 +113,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
             <Menu className="w-5 h-5" />
           </button>
 
-          <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
+          <Link href="/landing" className="flex items-center gap-2 hover:opacity-90 transition-opacity" title="Go to Landing Page">
             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[#166534] text-white flex items-center justify-center shrink-0 shadow-xs">
               <Sprout className="w-4 h-4 text-emerald-100" />
             </div>
@@ -202,7 +202,12 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
             <div className="space-y-4">
               {/* Drawer Header */}
               <div className="flex items-center justify-between pb-3 border-b border-[#c8d9c8]">
-                <div className="flex items-center gap-2">
+                <Link
+                  href="/landing"
+                  onClick={() => setShowMobileMenu(false)}
+                  className="flex items-center gap-2 hover:opacity-90 transition-opacity"
+                  title="Go to Landing Page"
+                >
                   <div className="w-8 h-8 rounded-xl bg-[#166534] text-white flex items-center justify-center shadow-xs">
                     <Sprout className="w-4 h-4 text-emerald-100" />
                   </div>
@@ -214,7 +219,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                       {language === "mr" ? "स्थानिक हवामान प्रणाली" : "Panchayat Weather AI"}
                     </span>
                   </div>
-                </div>
+                </Link>
 
                 <button
                   onClick={() => setShowMobileMenu(false)}
