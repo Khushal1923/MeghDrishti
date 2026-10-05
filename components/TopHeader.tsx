@@ -27,9 +27,11 @@ import {
   Mail,
   Loader2,
   AlertCircle,
+  User,
 } from "lucide-react";
 import { useLanguage, type Language } from "@/lib/LanguageContext";
 import { useAuth, DEMO_USERS } from "@/lib/AuthContext";
+import { PANCHAYATS_DATA } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
 interface TopHeaderProps {
@@ -56,19 +58,35 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   const language = currentLang;
   const pathname = usePathname();
 
-  const { user, loginAs, logout, isLoggedIn, signInWithEmail, signUpWithEmail } = useAuth();
+  const {
+    user,
+    loginAs,
+    logout,
+    isLoggedIn,
+    signInFarmer,
+    signUpFarmer,
+    signInOfficer,
+    signUpOfficer,
+  } = useAuth();
 
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
   const [loginRoleTab, setLoginRoleTab] = useState<"farmer" | "officer">("farmer");
 
-  // Form Fields
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [location, setLocation] = useState("");
+  // Farmer Form State
+  const [farmerPhone, setFarmerPhone] = useState("9823456789");
+  const [farmerPin, setFarmerPin] = useState("1234");
+  const [farmerName, setFarmerName] = useState("Ramesh Tukaram Patil");
+  const [farmerVillage, setFarmerVillage] = useState("MH_PUN_001");
+  const [farmerCrops, setFarmerCrops] = useState<string[]>(["Cotton", "Soybean"]);
+
+  // Officer Form State
+  const [officerId, setOfficerId] = useState("OFFICER_IMD_2026");
+  const [officerPass, setOfficerPass] = useState("admin123");
+  const [officerName, setOfficerName] = useState("Dr. Aniruddha Deshmukh");
+  const [officerEmail, setOfficerEmail] = useState("officer.imd@meghdrishti.in");
+  const [officerDept, setOfficerDept] = useState("District Agricultural & Meteorological Division");
 
   // UI State
   const [authLoading, setAuthLoading] = useState(false);
@@ -82,7 +100,15 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
     }
   };
 
-  const handleAuthSubmit = async (e: React.FormEvent) => {
+  const toggleCrop = (crop: string) => {
+    if (farmerCrops.includes(crop)) {
+      setFarmerCrops(farmerCrops.filter((c) => c !== crop));
+    } else {
+      setFarmerCrops([...farmerCrops, crop]);
+    }
+  };
+
+  const handleFarmerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError(null);
     setAuthSuccess(null);
@@ -90,47 +116,30 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
 
     try {
       if (authMode === "signin") {
-        const targetEmail = email.trim() || (loginRoleTab === "farmer" ? "farmer.demo@meghdrishti.in" : "officer.imd@meghdrishti.in");
-        const targetPass = password || "meghdrishti2026";
-
-        const { error } = await signInWithEmail(targetEmail, targetPass, loginRoleTab);
-        if (error) {
-          // If Supabase credentials fail, fallback gracefully with demo profile so user is never locked out
-          loginAs(loginRoleTab, fullName || undefined, phone || undefined);
-          setAuthSuccess(language === "mr" ? "स्थानिक सत्रासह यशस्वी प्रवेश!" : "Signed in successfully!");
-          setTimeout(() => setShowLoginModal(false), 800);
+        const res = await signInFarmer(farmerPhone, farmerPin);
+        if (res.error) {
+          setAuthError(res.error.message);
         } else {
-          setAuthSuccess(language === "mr" ? "सुपाबेसद्वारे यशस्वी प्रवेश!" : "Signed in successfully with Supabase!");
-          setTimeout(() => setShowLoginModal(false), 800);
+          setAuthSuccess(language === "mr" ? "शेतकरी खात्यात यशस्वी प्रवेश!" : "Signed in as Farmer successfully!");
+          setTimeout(() => setShowLoginModal(false), 700);
         }
       } else {
         // Sign Up
-        if (!email.trim() || !password.trim()) {
-          setAuthError(language === "mr" ? "कृपया ईमेल आणि पासवर्ड प्रविष्ट करा." : "Please provide email and password.");
-          setAuthLoading(false);
-          return;
-        }
+        const villageObj = PANCHAYATS_DATA.find((p) => p.lgd_code === farmerVillage);
+        const res = await signUpFarmer({
+          name: farmerName,
+          phone: farmerPhone,
+          pin: farmerPin,
+          panchayatLgd: farmerVillage,
+          location: villageObj ? `${villageObj.panchayat_name}, ${villageObj.district}` : "Maharashtra Gram Panchayat",
+          crops: farmerCrops,
+        });
 
-        const { error } = await signUpWithEmail(
-          email.trim(),
-          password,
-          loginRoleTab,
-          fullName.trim() || (loginRoleTab === "farmer" ? "शेतकरी मित्र" : "कृषी अधिकारी"),
-          phone.trim(),
-          location.trim()
-        );
-
-        if (error) {
-          setAuthError(error.message);
+        if (res.error) {
+          setAuthError(res.error.message);
         } else {
-          setAuthSuccess(
-            language === "mr"
-              ? "नोंदणी यशस्वी! खात्री करण्यासाठी ईमेल तपासा किंवा लॉगिन करा."
-              : "Registration successful! Please check your email or sign in."
-          );
-          setTimeout(() => {
-            setShowLoginModal(false);
-          }, 1200);
+          setAuthSuccess(language === "mr" ? "शेतकरी नोंदणी यशस्वी झाली!" : "Farmer registration successful!");
+          setTimeout(() => setShowLoginModal(false), 700);
         }
       }
     } catch (err: any) {
@@ -140,9 +149,44 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
     }
   };
 
-  const handle1ClickDemo = (role: "farmer" | "officer") => {
-    loginAs(role);
-    setShowLoginModal(false);
+  const handleOfficerSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError(null);
+    setAuthSuccess(null);
+    setAuthLoading(true);
+
+    try {
+      if (authMode === "signin") {
+        const res = await signInOfficer(officerId, officerPass);
+        if (res.error) {
+          setAuthError(res.error.message);
+        } else {
+          setAuthSuccess(language === "mr" ? "अधिकारी खात्यात यशस्वी प्रवेश!" : "Signed in as Officer successfully!");
+          setTimeout(() => setShowLoginModal(false), 700);
+        }
+      } else {
+        // Sign Up
+        const res = await signUpOfficer({
+          name: officerName,
+          officerId: officerId,
+          email: officerEmail,
+          password: officerPass,
+          department: officerDept,
+          location: "IMD District Nodal Cell, Pune Division",
+        });
+
+        if (res.error) {
+          setAuthError(res.error.message);
+        } else {
+          setAuthSuccess(language === "mr" ? "अधिकारी नोंदणी यशस्वी झाली!" : "Officer registration successful!");
+          setTimeout(() => setShowLoginModal(false), 700);
+        }
+      }
+    } catch (err: any) {
+      setAuthError(err.message || "Authentication error");
+    } finally {
+      setAuthLoading(false);
+    }
   };
 
   const allNavItems = [
@@ -254,7 +298,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
       </header>
 
       {/* ========================================================= */}
-      {/* MOBILE FULL-SCREEN SLIDE-OUT DRAWER (OUTSIDE HEADER) */}
+      {/* MOBILE FULL-SCREEN SLIDE-OUT DRAWER */}
       {/* ========================================================= */}
       {showMobileMenu && (
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-xs flex md:hidden">
@@ -374,7 +418,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
       )}
 
       {/* ========================================================= */}
-      {/* SUPABASE DUAL LOGIN & REGISTRATION MODAL */}
+      {/* FULL SUPABASE DUAL AUTHENTICATION MODAL */}
       {/* ========================================================= */}
       {showLoginModal && (
         <div className="fixed inset-0 z-[100] bg-black/65 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
@@ -384,16 +428,16 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-black text-[#166534] uppercase tracking-widest block">
-                    Supabase Authentication
+                    Supabase Dual Auth Portal
                   </span>
                   <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-black border border-emerald-300">
-                    Live
+                    Online
                   </span>
                 </div>
                 <h3 className="text-base sm:text-lg font-black text-[#0f2918] mt-0.5">
-                  {authMode === "signin"
-                    ? language === "mr" ? "वापरकर्ता लॉगिन पोर्टल" : "Sign In to MeghDrishti"
-                    : language === "mr" ? "नवीन खाते नोंदणी" : "Create New Account"}
+                  {loginRoleTab === "farmer"
+                    ? language === "mr" ? "👨‍🌾 शेतकरी पोर्टल (Kisan Auth)" : "👨‍🌾 Farmer Authentication"
+                    : language === "mr" ? "🏛️ कृषी अधिकारी पोर्टल (Officer Auth)" : "🏛️ Officer Authentication"}
                 </h3>
               </div>
               <button
@@ -401,6 +445,43 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                 className="w-8 h-8 rounded-lg bg-[#d5e4d5] hover:bg-[#c6d9c6] text-[#166534] flex items-center justify-center"
               >
                 <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Dual Role Selector Tabs */}
+            <div className="grid grid-cols-2 gap-2 p-1 bg-[#dbe8db] rounded-2xl border border-[#c3d6c4]">
+              <button
+                type="button"
+                onClick={() => {
+                  setLoginRoleTab("farmer");
+                  setAuthError(null);
+                }}
+                className={cn(
+                  "flex items-center justify-center gap-2 py-2 px-3 rounded-xl font-black text-xs transition-all",
+                  loginRoleTab === "farmer"
+                    ? "bg-[#166534] text-white shadow-xs"
+                    : "text-[#166534] hover:bg-[#cde0cd]"
+                )}
+              >
+                <Sprout className="w-4 h-4" />
+                <span>{language === "mr" ? "शेतकरी (Farmer)" : "Farmer Portal"}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setLoginRoleTab("officer");
+                  setAuthError(null);
+                }}
+                className={cn(
+                  "flex items-center justify-center gap-2 py-2 px-3 rounded-xl font-black text-xs transition-all",
+                  loginRoleTab === "officer"
+                    ? "bg-[#1d3557] text-white shadow-xs"
+                    : "text-[#1d3557] hover:bg-[#cde0cd]"
+                )}
+              >
+                <Shield className="w-4 h-4" />
+                <span>{language === "mr" ? "कृषी अधिकारी (Officer)" : "Officer Portal"}</span>
               </button>
             </div>
 
@@ -430,38 +511,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                   authMode === "signup" ? "bg-[#166534] text-white shadow-xs" : "text-[#166534] hover:bg-[#cde0cd]"
                 )}
               >
-                {language === "mr" ? "नवीन नोंदणी (Register)" : "Register"}
-              </button>
-            </div>
-
-            {/* Dual Role Selector Tabs */}
-            <div className="grid grid-cols-2 gap-2 p-1 bg-[#dbe8db] rounded-2xl border border-[#c3d6c4]">
-              <button
-                type="button"
-                onClick={() => setLoginRoleTab("farmer")}
-                className={cn(
-                  "flex items-center justify-center gap-2 py-2 px-3 rounded-xl font-black text-xs transition-all",
-                  loginRoleTab === "farmer"
-                    ? "bg-[#166534] text-white shadow-xs"
-                    : "text-[#166534] hover:bg-[#cde0cd]"
-                )}
-              >
-                <Sprout className="w-4 h-4" />
-                <span>{language === "mr" ? "शेतकरी (Farmer)" : "Farmer"}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setLoginRoleTab("officer")}
-                className={cn(
-                  "flex items-center justify-center gap-2 py-2 px-3 rounded-xl font-black text-xs transition-all",
-                  loginRoleTab === "officer"
-                    ? "bg-[#1d3557] text-white shadow-xs"
-                    : "text-[#1d3557] hover:bg-[#cde0cd]"
-                )}
-              >
-                <Shield className="w-4 h-4" />
-                <span>{language === "mr" ? "कृषी अधिकारी (Officer)" : "Govt Officer"}</span>
+                {language === "mr" ? "नवीन नोंदणी (Register)" : "Register (Sign Up)"}
               </button>
             </div>
 
@@ -480,118 +530,260 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
               </div>
             )}
 
-            {/* MAIN AUTH FORM */}
-            <form onSubmit={handleAuthSubmit} className="space-y-3 text-xs">
-              {authMode === "signup" && (
-                <>
-                  <div className="space-y-1">
-                    <label className="block font-black text-[#0f2918]">
-                      {language === "mr" ? "पूर्ण नाव" : "Full Name"}
-                    </label>
+            {/* TAB 1: FARMER AUTH FORM */}
+            {loginRoleTab === "farmer" && (
+              <form onSubmit={handleFarmerSubmit} className="space-y-3 text-xs">
+                {authMode === "signup" && (
+                  <>
+                    <div className="space-y-1">
+                      <label className="block font-black text-[#0f2918]">
+                        {language === "mr" ? "शेतकऱ्याचे पूर्ण नाव" : "Farmer Full Name"}
+                      </label>
+                      <input
+                        type="text"
+                        value={farmerName}
+                        onChange={(e) => setFarmerName(e.target.value)}
+                        placeholder="उदा. रमेश तुकाराम पाटील"
+                        className="w-full bg-[#dbe8db] border border-[#c3d6c4] rounded-xl px-3 py-2 text-xs font-bold text-[#0f2918] focus:outline-none focus:ring-2 focus:ring-[#166534]"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block font-black text-[#0f2918]">
+                        {language === "mr" ? "गाव / ग्रामपंचायत निवडा" : "Select Gram Panchayat"}
+                      </label>
+                      <select
+                        value={farmerVillage}
+                        onChange={(e) => setFarmerVillage(e.target.value)}
+                        className="w-full bg-[#dbe8db] border border-[#c3d6c4] rounded-xl px-3 py-2 text-xs font-bold text-[#0f2918] focus:outline-none focus:ring-2 focus:ring-[#166534]"
+                      >
+                        {PANCHAYATS_DATA.map((p) => (
+                          <option key={p.lgd_code} value={p.lgd_code}>
+                            {p.panchayat_name} ({p.taluka}, {p.district})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block font-black text-[#0f2918]">
+                        {language === "mr" ? "मुख्य पिके (Crops Grown)" : "Select Crops Grown"}
+                      </label>
+                      <div className="flex flex-wrap gap-1.5 pt-0.5">
+                        {["Cotton", "Soybean", "Onion", "Wheat", "Sugarcane", "Maize"].map((crop) => (
+                          <button
+                            key={crop}
+                            type="button"
+                            onClick={() => toggleCrop(crop)}
+                            className={cn(
+                              "px-2.5 py-1 rounded-full text-[10px] font-black border transition-all",
+                              farmerCrops.includes(crop)
+                                ? "bg-[#166534] text-white border-[#166534]"
+                                : "bg-white text-[#166534] border-[#c8d9c8]"
+                            )}
+                          >
+                            {crop}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                <div className="space-y-1">
+                  <label className="block font-black text-[#0f2918]">
+                    {language === "mr" ? "मोबाईल नंबर" : "Mobile Phone Number"}
+                  </label>
+                  <div className="relative">
                     <input
-                      type="text"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder={loginRoleTab === "farmer" ? "उदा. रमेश तुकाराम पाटील" : "उदा. डॉ. अनिरुद्ध देशमुख"}
+                      type="tel"
+                      value={farmerPhone}
+                      onChange={(e) => setFarmerPhone(e.target.value)}
+                      placeholder="98XXXXXXXX"
                       className="w-full bg-[#dbe8db] border border-[#c3d6c4] rounded-xl px-3 py-2 text-xs font-bold text-[#0f2918] focus:outline-none focus:ring-2 focus:ring-[#166534]"
                       required
                     />
+                    <Smartphone className="w-3.5 h-3.5 text-[#166534]/60 absolute right-3 top-1/2 -translate-y-1/2" />
                   </div>
+                </div>
 
-                  <div className="space-y-1">
-                    <label className="block font-black text-[#0f2918]">
-                      {language === "mr" ? "मोबाईल नंबर" : "Mobile Number"}
-                    </label>
+                <div className="space-y-1">
+                  <label className="block font-black text-[#0f2918]">
+                    {language === "mr" ? "४-अंकी सुरक्षा पिन (PIN)" : "4-Digit Security PIN"}
+                  </label>
+                  <div className="relative">
                     <input
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="98XXXXXXXX"
+                      type="password"
+                      value={farmerPin}
+                      onChange={(e) => setFarmerPin(e.target.value)}
+                      placeholder="1234"
+                      maxLength={6}
                       className="w-full bg-[#dbe8db] border border-[#c3d6c4] rounded-xl px-3 py-2 text-xs font-bold text-[#0f2918] focus:outline-none focus:ring-2 focus:ring-[#166534]"
+                      required
                     />
+                    <Lock className="w-3.5 h-3.5 text-[#166534]/60 absolute right-3 top-1/2 -translate-y-1/2" />
                   </div>
+                </div>
 
-                  <div className="space-y-1">
-                    <label className="block font-black text-[#0f2918]">
-                      {language === "mr" ? "गाव / तालुका / विभाग" : "Village / Taluka / Division"}
-                    </label>
+                <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-[#c8d9c8]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      loginAs("farmer");
+                      setShowLoginModal(false);
+                    }}
+                    className="w-full sm:w-auto text-[11px] font-black text-[#166534] hover:underline"
+                  >
+                    ⚡ {language === "mr" ? "१-क्लिक चाचणी शेतकरी" : "1-Click Demo Farmer"}
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={authLoading}
+                    className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-5 py-2 bg-[#166534] hover:bg-[#15803d] text-white font-black rounded-full shadow-xs transition-all disabled:opacity-50"
+                  >
+                    {authLoading ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>{language === "mr" ? "प्रक्रिया सुरू..." : "Authenticating..."}</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        <span>
+                          {authMode === "signin"
+                            ? language === "mr" ? "शेतकरी प्रवेश" : "Sign In as Farmer"
+                            : language === "mr" ? "शेतकरी नोंदणी करा" : "Register Farmer"}
+                        </span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* TAB 2: OFFICER AUTH FORM */}
+            {loginRoleTab === "officer" && (
+              <form onSubmit={handleOfficerSubmit} className="space-y-3 text-xs">
+                {authMode === "signup" && (
+                  <>
+                    <div className="space-y-1">
+                      <label className="block font-black text-[#0f2918]">
+                        {language === "mr" ? "अधिकारी पूर्ण नाव व पद" : "Officer Name & Designation"}
+                      </label>
+                      <input
+                        type="text"
+                        value={officerName}
+                        onChange={(e) => setOfficerName(e.target.value)}
+                        placeholder="उदा. डॉ. अनिरुद्ध देशमुख"
+                        className="w-full bg-[#dbe8db] border border-[#c3d6c4] rounded-xl px-3 py-2 text-xs font-bold text-[#0f2918] focus:outline-none focus:ring-2 focus:ring-[#1d3557]"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block font-black text-[#0f2918]">
+                        {language === "mr" ? "शासकीय ईमेल पत्ता" : "Official Govt Email"}
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="email"
+                          value={officerEmail}
+                          onChange={(e) => setOfficerEmail(e.target.value)}
+                          placeholder="officer.imd@meghdrishti.in"
+                          className="w-full bg-[#dbe8db] border border-[#c3d6c4] rounded-xl px-3 py-2 text-xs font-bold text-[#0f2918] focus:outline-none focus:ring-2 focus:ring-[#1d3557]"
+                          required
+                        />
+                        <Mail className="w-3.5 h-3.5 text-[#1d3557]/60 absolute right-3 top-1/2 -translate-y-1/2" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block font-black text-[#0f2918]">
+                        {language === "mr" ? "विभाग / नोडल केंद्र" : "Department / Nodal Division"}
+                      </label>
+                      <input
+                        type="text"
+                        value={officerDept}
+                        onChange={(e) => setOfficerDept(e.target.value)}
+                        placeholder="उदा. District Agriculture Division"
+                        className="w-full bg-[#dbe8db] border border-[#c3d6c4] rounded-xl px-3 py-2 text-xs font-bold text-[#0f2918] focus:outline-none focus:ring-2 focus:ring-[#1d3557]"
+                      />
+                    </div>
+                  </>
+                )}
+
+                <div className="space-y-1">
+                  <label className="block font-black text-[#0f2918]">
+                    {language === "mr" ? "शासकीय नोडल आयडी (Govt Nodal ID)" : "Govt Officer ID / Nodal ID"}
+                  </label>
+                  <div className="relative">
                     <input
                       type="text"
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
-                      placeholder="उदा. वाघोली, पुणे"
-                      className="w-full bg-[#dbe8db] border border-[#c3d6c4] rounded-xl px-3 py-2 text-xs font-bold text-[#0f2918] focus:outline-none focus:ring-2 focus:ring-[#166534]"
+                      value={officerId}
+                      onChange={(e) => setOfficerId(e.target.value)}
+                      placeholder="OFFICER_IMD_2026"
+                      className="w-full bg-[#dbe8db] border border-[#c3d6c4] rounded-xl px-3 py-2 text-xs font-bold text-[#0f2918] focus:outline-none focus:ring-2 focus:ring-[#1d3557]"
+                      required
                     />
+                    <Briefcase className="w-3.5 h-3.5 text-[#1d3557]/60 absolute right-3 top-1/2 -translate-y-1/2" />
                   </div>
-                </>
-              )}
-
-              <div className="space-y-1">
-                <label className="block font-black text-[#0f2918]">
-                  {language === "mr" ? "ईमेल पत्ता" : "Email Address"}
-                </label>
-                <div className="relative">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder={
-                      loginRoleTab === "farmer" ? "farmer.demo@meghdrishti.in" : "officer.imd@meghdrishti.in"
-                    }
-                    className="w-full bg-[#dbe8db] border border-[#c3d6c4] rounded-xl px-3 py-2 text-xs font-bold text-[#0f2918] focus:outline-none focus:ring-2 focus:ring-[#166534]"
-                  />
-                  <Mail className="w-3.5 h-3.5 text-[#166534]/60 absolute right-3 top-1/2 -translate-y-1/2" />
                 </div>
-              </div>
 
-              <div className="space-y-1">
-                <label className="block font-black text-[#0f2918]">
-                  {language === "mr" ? "पासवर्ड (Password)" : "Password"}
-                </label>
-                <div className="relative">
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full bg-[#dbe8db] border border-[#c3d6c4] rounded-xl px-3 py-2 text-xs font-bold text-[#0f2918] focus:outline-none focus:ring-2 focus:ring-[#166534]"
-                  />
-                  <Lock className="w-3.5 h-3.5 text-[#166534]/60 absolute right-3 top-1/2 -translate-y-1/2" />
+                <div className="space-y-1">
+                  <label className="block font-black text-[#0f2918]">
+                    {language === "mr" ? "विभागीय पासवर्ड (Password)" : "Department Password"}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="password"
+                      value={officerPass}
+                      onChange={(e) => setOfficerPass(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full bg-[#dbe8db] border border-[#c3d6c4] rounded-xl px-3 py-2 text-xs font-bold text-[#0f2918] focus:outline-none focus:ring-2 focus:ring-[#1d3557]"
+                      required
+                    />
+                    <Lock className="w-3.5 h-3.5 text-[#1d3557]/60 absolute right-3 top-1/2 -translate-y-1/2" />
+                  </div>
                 </div>
-              </div>
 
-              <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-[#c8d9c8]">
-                <button
-                  type="button"
-                  onClick={() => handle1ClickDemo(loginRoleTab)}
-                  className="w-full sm:w-auto text-[11px] font-black text-[#166534] hover:underline"
-                >
-                  ⚡ {language === "mr" ? `१-क्लिक चाचणी ${loginRoleTab === "farmer" ? "शेतकरी" : "अधिकारी"}` : `1-Click Demo ${loginRoleTab === "farmer" ? "Farmer" : "Officer"}`}
-                </button>
+                <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-[#c8d9c8]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      loginAs("officer");
+                      setShowLoginModal(false);
+                    }}
+                    className="w-full sm:w-auto text-[11px] font-black text-[#1d3557] hover:underline"
+                  >
+                    ⚡ {language === "mr" ? "१-क्लिक चाचणी अधिकारी" : "1-Click Demo Officer"}
+                  </button>
 
-                <button
-                  type="submit"
-                  disabled={authLoading}
-                  className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-5 py-2 bg-[#166534] hover:bg-[#15803d] text-white font-black rounded-full shadow-xs transition-all disabled:opacity-50"
-                >
-                  {authLoading ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      <span>{language === "mr" ? "पडताळणी..." : "Verifying..."}</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="w-3.5 h-3.5" />
-                      <span>
-                        {authMode === "signin"
-                          ? language === "mr" ? "प्रवेश करा (Sign In)" : "Sign In"
-                          : language === "mr" ? "नोंदणी करा (Register)" : "Register"}
-                      </span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
+                  <button
+                    type="submit"
+                    disabled={authLoading}
+                    className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-5 py-2 bg-[#1d3557] hover:bg-[#152740] text-white font-black rounded-full shadow-xs transition-all disabled:opacity-50"
+                  >
+                    {authLoading ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>{language === "mr" ? "प्रक्रिया सुरू..." : "Authenticating..."}</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        <span>
+                          {authMode === "signin"
+                            ? language === "mr" ? "अधिकारी प्रवेश" : "Sign In as Officer"
+                            : language === "mr" ? "अधिकारी नोंदणी करा" : "Register Officer"}
+                        </span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}
