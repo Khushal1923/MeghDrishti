@@ -1,6 +1,9 @@
+"use client";
+
 import React from "react";
 import { ShieldCheck, ShieldAlert, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/lib/LanguageContext";
 
 interface TrustBadgeProps {
   level: "High" | "Medium" | "Low" | string;
@@ -15,16 +18,24 @@ export const TrustBadge: React.FC<TrustBadgeProps> = ({
   showIcon = true,
   className,
 }) => {
+  const { language } = useLanguage();
   const normalized = level?.toLowerCase() || "high";
 
-  let bgClass = "bg-emerald-50 text-[#166534] border-emerald-200";
+  let bgClass = "bg-[#d7ead9] text-[#166534] border-[#a7d4ac]";
   let Icon = ShieldCheck;
+  let labelText = `${level} Trust`;
+
+  if (language === "mr") {
+    if (normalized === "high") labelText = "उच्च विश्वास";
+    else if (normalized === "medium") labelText = "मध्यम विश्वास";
+    else labelText = "सावध";
+  }
 
   if (normalized === "medium") {
-    bgClass = "bg-amber-50 text-amber-800 border-amber-200";
+    bgClass = "bg-amber-50 text-amber-800 border-amber-300";
     Icon = Shield;
   } else if (normalized === "low") {
-    bgClass = "bg-rose-50 text-rose-800 border-rose-200";
+    bgClass = "bg-rose-50 text-rose-800 border-rose-300";
     Icon = ShieldAlert;
   }
 
@@ -38,7 +49,7 @@ export const TrustBadge: React.FC<TrustBadgeProps> = ({
       title="Calibrated confidence score from validation metrics"
     >
       {showIcon && <Icon className="w-3.5 h-3.5 shrink-0" />}
-      <span>{level} Trust</span>
+      <span>{labelText}</span>
       {score !== undefined && (
         <span className="font-mono text-[11px] font-extrabold">
           · {Math.round(score * 100)}%
@@ -47,4 +58,3 @@ export const TrustBadge: React.FC<TrustBadgeProps> = ({
     </span>
   );
 };
-

@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import {
   ResponsiveContainer,
@@ -12,6 +14,7 @@ import {
 } from "recharts";
 import { CloudRain, Thermometer, CheckCircle2 } from "lucide-react";
 import { ForecastHistoryItem } from "@/lib/types";
+import { useLanguage } from "@/lib/LanguageContext";
 
 interface ForecastComparisonChartProps {
   data?: ForecastHistoryItem[];
@@ -22,24 +25,25 @@ export const ForecastComparisonChart: React.FC<ForecastComparisonChartProps> = (
   data,
   panchayatName = "Wagholi Gram Panchayat",
 }) => {
+  const { language } = useLanguage();
   const [metric, setMetric] = useState<"rainfall" | "temperature">("rainfall");
 
-  // Fallback demo data if data not provided
+  // Fallback demo data with day labels based on language
   const chartData: ForecastHistoryItem[] =
     data && data.length > 0
       ? data
       : [
-          { date: "Day 1", observed_rainfall: 0.0, baseline_rainfall: 2.1, corrected_rainfall: 0.2, range_low: 0.0, range_high: 1.5, observed_temperature: 31.5, baseline_temperature: 32.8, corrected_temperature: 31.2, rain_probability: 0.1 },
-          { date: "Day 2", observed_rainfall: 4.5, baseline_rainfall: 8.2, corrected_rainfall: 4.8, range_low: 2.1, range_high: 7.2, observed_temperature: 30.2, baseline_temperature: 31.5, corrected_temperature: 30.0, rain_probability: 0.6 },
-          { date: "Day 3", observed_rainfall: 18.2, baseline_rainfall: 11.5, corrected_rainfall: 17.5, range_low: 12.0, range_high: 22.4, observed_temperature: 27.5, baseline_temperature: 29.0, corrected_temperature: 27.8, rain_probability: 0.9 },
-          { date: "Day 4", observed_rainfall: 26.0, baseline_rainfall: 18.0, corrected_rainfall: 24.8, range_low: 19.5, range_high: 32.0, observed_temperature: 26.0, baseline_temperature: 27.8, corrected_temperature: 26.2, rain_probability: 0.95 },
-          { date: "Day 5", observed_rainfall: 12.4, baseline_rainfall: 19.5, corrected_rainfall: 13.0, range_low: 8.4, range_high: 17.2, observed_temperature: 28.1, baseline_temperature: 29.5, corrected_temperature: 28.3, rain_probability: 0.75 },
-          { date: "Day 6", observed_rainfall: 2.0, baseline_rainfall: 6.8, corrected_rainfall: 2.4, range_low: 0.5, range_high: 4.9, observed_temperature: 30.0, baseline_temperature: 31.2, corrected_temperature: 29.8, rain_probability: 0.2 },
-          { date: "Day 7", observed_rainfall: 38.5, baseline_rainfall: 22.0, corrected_rainfall: 36.2, range_low: 28.0, range_high: 45.0, observed_temperature: 24.5, baseline_temperature: 26.5, corrected_temperature: 24.8, rain_probability: 0.95 },
+          { date: language === "mr" ? "दिवस १" : "Day 1", observed_rainfall: 0.0, baseline_rainfall: 2.1, corrected_rainfall: 0.2, range_low: 0.0, range_high: 1.5, observed_temperature: 31.5, baseline_temperature: 32.8, corrected_temperature: 31.2, rain_probability: 0.1 },
+          { date: language === "mr" ? "दिवस २" : "Day 2", observed_rainfall: 4.5, baseline_rainfall: 8.2, corrected_rainfall: 4.8, range_low: 2.1, range_high: 7.2, observed_temperature: 30.2, baseline_temperature: 31.5, corrected_temperature: 30.0, rain_probability: 0.6 },
+          { date: language === "mr" ? "दिवस ३" : "Day 3", observed_rainfall: 18.2, baseline_rainfall: 11.5, corrected_rainfall: 17.5, range_low: 12.0, range_high: 22.4, observed_temperature: 27.5, baseline_temperature: 29.0, corrected_temperature: 27.8, rain_probability: 0.9 },
+          { date: language === "mr" ? "दिवस ४" : "Day 4", observed_rainfall: 26.0, baseline_rainfall: 18.0, corrected_rainfall: 24.8, range_low: 19.5, range_high: 32.0, observed_temperature: 26.0, baseline_temperature: 27.8, corrected_temperature: 26.2, rain_probability: 0.95 },
+          { date: language === "mr" ? "दिवस ५" : "Day 5", observed_rainfall: 12.4, baseline_rainfall: 19.5, corrected_rainfall: 13.0, range_low: 8.4, range_high: 17.2, observed_temperature: 28.1, baseline_temperature: 29.5, corrected_temperature: 28.3, rain_probability: 0.75 },
+          { date: language === "mr" ? "दिवस ६" : "Day 6", observed_rainfall: 2.0, baseline_rainfall: 6.8, corrected_rainfall: 2.4, range_low: 0.5, range_high: 4.9, observed_temperature: 30.0, baseline_temperature: 31.2, corrected_temperature: 29.8, rain_probability: 0.2 },
+          { date: language === "mr" ? "दिवस ७" : "Day 7", observed_rainfall: 38.5, baseline_rainfall: 22.0, corrected_rainfall: 36.2, range_low: 28.0, range_high: 45.0, observed_temperature: 24.5, baseline_temperature: 26.5, corrected_temperature: 24.8, rain_probability: 0.95 },
         ];
 
-  const rawError = metric === "rainfall" ? "7.42 mm" : "1.48 °C";
-  const meghdrishtiError = metric === "rainfall" ? "1.85 mm" : "0.42 °C";
+  const rawError = metric === "rainfall" ? (language === "mr" ? "७.४२ मिमी" : "7.42 mm") : (language === "mr" ? "१.४८ °C" : "1.48 °C");
+  const meghdrishtiError = metric === "rainfall" ? (language === "mr" ? "१.८५ मिमी" : "1.85 mm") : (language === "mr" ? "०.४२ °C" : "0.42 °C");
   const improvement = "+75.1%";
 
   return (
@@ -48,10 +52,14 @@ export const ForecastComparisonChart: React.FC<ForecastComparisonChartProps> = (
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h3 className="text-lg md:text-xl font-extrabold text-[#0f2918] tracking-tight">
-            Does local correction improve the forecast?
+            {language === "mr"
+              ? "स्थानिक AI मुळे हवामान अंदाजात किती सुधारणा झाली?"
+              : "Does local correction improve the forecast?"}
           </h3>
-          <p className="text-xs text-[#2b4c34] mt-0.5">
-            Benchmarked against IMD Ground Truth at {panchayatName}
+          <p className="text-xs text-[#2b4c34] mt-0.5 font-bold">
+            {language === "mr"
+              ? `IMD प्रत्यक्ष निरीक्षण पडताळणी: ${panchayatName}`
+              : `Benchmarked against IMD Ground Truth at ${panchayatName}`}
           </p>
         </div>
 
@@ -66,7 +74,7 @@ export const ForecastComparisonChart: React.FC<ForecastComparisonChartProps> = (
             }`}
           >
             <CloudRain className="w-3.5 h-3.5" />
-            Rainfall
+            {language === "mr" ? "पाऊस" : "Rainfall"}
           </button>
           <button
             onClick={() => setMetric("temperature")}
@@ -77,7 +85,7 @@ export const ForecastComparisonChart: React.FC<ForecastComparisonChartProps> = (
             }`}
           >
             <Thermometer className="w-3.5 h-3.5" />
-            Temperature
+            {language === "mr" ? "तापमान" : "Temperature"}
           </button>
         </div>
       </div>
@@ -86,32 +94,38 @@ export const ForecastComparisonChart: React.FC<ForecastComparisonChartProps> = (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div className="p-4 rounded-xl bg-[#e6efe6] border border-[#c3d6c4]">
           <span className="text-xs font-bold text-[#166534]/70 uppercase tracking-wider block">
-            Raw Forecast Error
+            {language === "mr" ? "मूळ मॉडेल त्रुटी (Raw Error)" : "Raw Forecast Error"}
           </span>
           <div className="text-2xl font-extrabold text-rose-700 mt-1">
             {rawError}
           </div>
-          <span className="text-[11px] text-[#2b4c34] mt-0.5 block">Coarse NWP baseline</span>
+          <span className="text-[11px] text-[#2b4c34] mt-0.5 block font-medium">
+            {language === "mr" ? "१० किमी मूळ NWP बेसलाइन" : "Coarse NWP baseline"}
+          </span>
         </div>
 
         <div className="p-4 rounded-xl bg-[#d7ead9] border border-[#a7d4ac]">
           <span className="text-xs font-bold text-[#166534] uppercase tracking-wider block">
-            MeghDrishti Error
+            {language === "mr" ? "मेघदृष्टी AI त्रुटी" : "MeghDrishti Error"}
           </span>
           <div className="text-2xl font-extrabold text-[#166534] mt-1">
             {meghdrishtiError}
           </div>
-          <span className="text-[11px] text-[#166534] mt-0.5 block">AI local downscaling</span>
+          <span className="text-[11px] text-[#166534] mt-0.5 block font-medium">
+            {language === "mr" ? "१ किमी स्थानिक AI दुरुस्ती" : "AI local downscaling"}
+          </span>
         </div>
 
         <div className="p-4 rounded-xl bg-[#d7ead9] border border-[#a7d4ac]">
           <span className="text-xs font-bold text-[#166534] uppercase tracking-wider block">
-            Improvement
+            {language === "mr" ? "अचूकता सुधारणा" : "Improvement"}
           </span>
           <div className="text-2xl font-extrabold text-[#166534] mt-1">
             {improvement}
           </div>
-          <span className="text-[11px] text-[#166534] mt-0.5 block">Error reduction</span>
+          <span className="text-[11px] text-[#166534] mt-0.5 block font-medium">
+            {language === "mr" ? "एकूण त्रुटी कपात" : "Error reduction"}
+          </span>
         </div>
       </div>
 
@@ -142,7 +156,7 @@ export const ForecastComparisonChart: React.FC<ForecastComparisonChartProps> = (
             <Area
               type="monotone"
               dataKey={metric === "rainfall" ? "observed_rainfall" : "observed_temperature"}
-              name="Observed (IMD)"
+              name={language === "mr" ? "प्रत्यक्ष नोंद (IMD)" : "Observed (IMD)"}
               fill="#0ea5e9"
               fillOpacity={0.15}
               stroke="#0284c7"
@@ -151,7 +165,7 @@ export const ForecastComparisonChart: React.FC<ForecastComparisonChartProps> = (
             <Line
               type="monotone"
               dataKey={metric === "rainfall" ? "baseline_rainfall" : "baseline_temperature"}
-              name="Raw Forecast"
+              name={language === "mr" ? "मूळ मॉडेल (Raw)" : "Raw Forecast"}
               stroke="#e11d48"
               strokeWidth={1.8}
               strokeDasharray="4 4"
@@ -160,7 +174,7 @@ export const ForecastComparisonChart: React.FC<ForecastComparisonChartProps> = (
             <Line
               type="monotone"
               dataKey={metric === "rainfall" ? "corrected_rainfall" : "corrected_temperature"}
-              name="MeghDrishti"
+              name={language === "mr" ? "मेघदृष्टी AI" : "MeghDrishti"}
               stroke="#166534"
               strokeWidth={2.5}
               dot={{ r: 4, fill: "#166534" }}
@@ -173,9 +187,15 @@ export const ForecastComparisonChart: React.FC<ForecastComparisonChartProps> = (
       <div className="flex flex-wrap items-center justify-between text-xs text-[#2b4c34] pt-3 border-t border-[#c8d9c8] font-medium">
         <div className="flex items-center gap-1.5 text-[#0f2918] font-bold">
           <CheckCircle2 className="w-4 h-4 text-[#166534]" />
-          <span>Validation Sample: 1,060 days across 3 agro-climatic zones</span>
+          <span>
+            {language === "mr"
+              ? "पडताळणी नमुना: ३ कृषी-हवामान विभागांमधील १,०६० दिवस"
+              : "Validation Sample: 1,060 days across 3 agro-climatic zones"}
+          </span>
         </div>
-        <span className="text-[#166534]/70">Leakage-free chronological holdout</span>
+        <span className="text-[#166534]/70">
+          {language === "mr" ? "पारदर्शक ऐतिहासिक पडताळणी" : "Leakage-free chronological holdout"}
+        </span>
       </div>
     </div>
   );
