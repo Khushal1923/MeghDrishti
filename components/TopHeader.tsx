@@ -191,10 +191,13 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
     }
   };
 
+  const isOfficer = user?.role === "officer";
+
   const allNavItems = [
     { label: t("मुख्य पृष्ठ", "मुख्य पृष्ठ", "Home"), href: "/", icon: Globe2 },
-    { label: tN("dashboard"), href: "/dashboard", icon: LayoutDashboard },
-    { label: tN("officer"), href: "/officer", icon: Shield },
+    ...(isOfficer
+      ? [{ label: tN("officer"), href: "/officer", icon: Shield }]
+      : [{ label: tN("dashboard"), href: "/dashboard", icon: LayoutDashboard }]),
     { label: tN("advisory"), href: "/advisory", icon: Sprout },
     { label: tN("forecast"), href: "/forecast", icon: CloudSun },
     { label: tN("comparison"), href: "/comparison", icon: BarChart3 },

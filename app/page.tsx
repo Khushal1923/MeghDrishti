@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Sprout,
   ArrowRight,
@@ -34,6 +35,9 @@ import {
   Users,
   CheckCircle,
   AlertTriangle,
+  X,
+  Lock,
+  UserCheck,
 } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
 import { PANCHAYATS_DATA } from "@/lib/data";
@@ -41,11 +45,62 @@ import { formatRainfall, formatTemp } from "@/lib/utils";
 import { useAuth } from "@/lib/AuthContext";
 
 export default function LandingPage() {
+  const router = useRouter();
   const { language, setLanguage } = useLanguage();
-  const { loginAs } = useAuth();
+  const { user, isLoggedIn, loginAs, logout, signInFarmer, signInOfficer } = useAuth();
   const [selectedVillageIndex, setSelectedVillageIndex] = useState<number>(0);
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
+
+  // Role selection & login modal state
+  const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
+  const [modalRole, setModalRole] = useState<"farmer" | "officer">("farmer");
+  const [farmerPhone, setFarmerPhone] = useState("9823456789");
+  const [farmerPin, setFarmerPin] = useState("1234");
+  const [officerId, setOfficerId] = useState("OFFICER_IMD_2026");
+  const [officerPass, setOfficerPass] = useState("admin123");
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authLoading, setAuthLoading] = useState(false);
+
+  const handleSelectRole = (role: "farmer" | "officer") => {
+    loginAs(role);
+    if (role === "officer") {
+      router.push("/officer");
+    } else {
+      router.push("/dashboard");
+    }
+  };
+
+  const handleOpenDashboard = () => {
+    if (user?.role === "officer") {
+      router.push("/officer");
+    } else if (user?.role === "farmer") {
+      router.push("/dashboard");
+    } else {
+      setShowLoginModal(true);
+    }
+  };
+
+  const handleModalSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError(null);
+    try {
+      if (modalRole === "farmer") {
+        await signInFarmer(farmerPhone, farmerPin);
+        setShowLoginModal(false);
+        router.push("/dashboard");
+      } else {
+        await signInOfficer(officerId, officerPass);
+        setShowLoginModal(false);
+        router.push("/officer");
+      }
+    } catch (err: any) {
+      setAuthError(err.message || "Login failed");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
 
   const currentVillage = PANCHAYATS_DATA[selectedVillageIndex] || PANCHAYATS_DATA[0];
 
@@ -215,13 +270,46 @@ export default function LandingPage() {
             </button>
           </div>
 
-          <Link
-            href="/dashboard"
-            className="hidden sm:inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#166534] text-white text-xs font-black hover:bg-[#15803d] transition-all shadow-xs"
-          >
-            <span>{t("डॅशबोर्ड उघडा", "डैशबोर्ड खोलें", "Open Dashboard")}</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+          {/* User Status / Role-Aware Login & Entry Button */}
+          {isLoggedIn && user ? (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleOpenDashboard}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#166534] text-white text-xs font-black hover:bg-[#15803d] transition-all shadow-xs"
+              >
+                <span>
+                  {user.role === "officer"
+                    ? "🏛️ " + t("अधिकारी पोर्टल", "अधिकारी पोर्टल", "Officer Portal")
+                    : "🌾 " + t("शेतकरी डॅशबोर्ड", "किसान डैशबोर्ड", "Farmer Dashboard")}
+                </span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => logout()}
+                className="hidden sm:inline-flex items-center text-[11px] text-[#2b4c34] hover:text-red-700 font-bold px-2 py-1"
+                title="Log out"
+              >
+                {t("बाहेर पडा", "लॉग आउट", "Logout")}
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowLoginModal(true)}
+                className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-full bg-white border border-[#c8d9c8] text-[#166534] text-xs font-black hover:bg-[#f0f6f0] transition-all shadow-2xs"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-[#166534]" />
+                <span>{t("लॉगिन / प्रवेश", "लॉगिन / प्रवेश", "Login / Sign In")}</span>
+              </button>
+              <button
+                onClick={handleOpenDashboard}
+                className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#166534] text-white text-xs font-black hover:bg-[#15803d] transition-all shadow-xs"
+              >
+                <span>{t("डॅशबोर्ड उघडा", "डैशबोर्ड खोलें", "Open Dashboard")}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -253,23 +341,23 @@ export default function LandingPage() {
             </p>
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
-              <Link
-                href="/dashboard"
-                className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#166534] hover:bg-[#15803d] text-white text-xs sm:text-sm font-black shadow-md transition-all"
+              <button
+                onClick={() => handleSelectRole("farmer")}
+                className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#166534] hover:bg-[#15803d] text-white text-xs sm:text-sm font-black shadow-md transition-all active:scale-98"
               >
                 <Sprout className="w-4 h-4 text-emerald-200" />
                 <span>{t("शेतकरी डॅशबोर्ड पहा", "किसान डैशबोर्ड देखें", "Farmer Live Dashboard")}</span>
                 <ArrowRight className="w-4 h-4" />
-              </Link>
+              </button>
 
-              <Link
-                href="/officer"
-                className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#1d3557] hover:bg-[#152740] text-white text-xs sm:text-sm font-black shadow-md transition-all"
+              <button
+                onClick={() => handleSelectRole("officer")}
+                className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#1d3557] hover:bg-[#152740] text-white text-xs sm:text-sm font-black shadow-md transition-all active:scale-98"
               >
                 <Shield className="w-4 h-4 text-amber-300" />
                 <span>{t("अधिकारी / संशोधक व्ह्यू", "अधिकारी / शोध पोर्टल", "Officer & Research Portal")}</span>
                 <ArrowRight className="w-4 h-4" />
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -360,6 +448,131 @@ export default function LandingPage() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================= */}
+      {/* 2.5. ROLE-BASED ACCESS GATEWAY */}
+      {/* ========================================================= */}
+      <section className="max-w-7xl mx-auto px-4 md:px-8 py-10 w-full">
+        <div className="bg-[#e4eee4] border-2 border-[#b8d2b8] rounded-3xl p-6 sm:p-8 shadow-xs">
+          <div className="text-center max-w-2xl mx-auto space-y-2 mb-8">
+            <span className="text-xs font-black text-[#166534] uppercase tracking-wider">
+              {t("तुमच्या भूमिकेनुसार थेट प्रवेश", "अपनी भूमिका अनुसार सीधा प्रवेश", "ROLE-BASED PORTAL ACCESS")}
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-black text-[#0f2918] tracking-tight">
+              {t("तुम्ही शेतकरी आहात की कृषी अधिकारी?", "आप किसान हैं या कृषि अधिकारी?", "Are you a Farmer or Agricultural Officer?")}
+            </h2>
+            <p className="text-xs sm:text-sm text-[#2b4c34] font-bold">
+              {t(
+                "तुमच्या भूमिकेनुसार योग्य डॅशबोर्ड निवडा. शेतकरी व्ह्यूमध्ये केवळ शेतकरी सल्ला दिसेल आणि अधिकारी व्ह्यूमध्ये सखोल मॉडेल विश्लेषण दिसेल.",
+                "अपनी भूमिका अनुसार उपयुक्त डैशबोर्ड चुनें। किसान व्यू में केवल किसान परामर्श और अधिकारी व्यू में गहन मॉडल विश्लेषण दिखेगा।",
+                "Select your role to be directed to your dedicated workspace. Farmer view provides hyper-local crop advisories, while Officer view provides model telemetry and physics tuning."
+              )}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Card 1: Farmer */}
+            <div className="bg-[#f4f8f4] border-2 border-[#166534]/30 hover:border-[#166534] rounded-3xl p-6 sm:p-7 flex flex-col justify-between space-y-6 shadow-sm hover:shadow-md transition-all group">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="w-14 h-14 rounded-2xl bg-[#166534] text-white flex items-center justify-center text-2xl shadow-sm shadow-[#166534]/30">
+                    🌾
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-[#d7ead9] text-[#166534] border border-[#a7d4ac] text-xs font-black">
+                    {t("शेतकरी व्ह्यू", "किसान व्यू", "Farmer View")}
+                  </span>
+                </div>
+
+                <div className="space-y-1.5">
+                  <h3 className="text-xl sm:text-2xl font-black text-[#0f2918] group-hover:text-[#166534] transition-colors">
+                    {t("शेतकरी डॅशबोर्ड", "किसान डैशबोर्ड", "Farmer Dashboard")}
+                  </h3>
+                  <p className="text-xs text-[#2b4c34] font-bold leading-relaxed">
+                    {t(
+                      "तुमच्या गावपातळीवरील १ किमी अचूक पाऊस अंदाज, कीड-रोग प्रतिबंधक सल्ला, फवारणी व सिंचन वेळापत्रक आणि स्थानिक भाषेत आवाज सहाय्यक.",
+                      "आपके ग्राम पंचायत स्तर पर 1 किमी सटीक बारिश पूर्वानुमान, कीट-रोग प्रबंधन सलाह, छिड़काव व सिंचाई सारणी और मातृभाषा में ध्वनि सहायक।",
+                      "Village-level 1 km precipitation forecasts, crop protection guidance, safe spraying & irrigation windows, and vernacular speech assistance."
+                    )}
+                  </p>
+                </div>
+
+                <ul className="space-y-2 text-xs font-bold text-[#166534]">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#166534] shrink-0" />
+                    <span>{t("१ किमी पंचायत पाऊस व तापमान", "1 किमी पंचायत वर्षा व तापमान", "1 km Panchayat Rain & Temp")}</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#166534] shrink-0" />
+                    <span>{t("फवारणी व सिंचन सुरक्षित वेळ", "छिड़काव व सिंचाई अनुकूल समय", "Safe Spray & Irrigation Hours")}</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#166534] shrink-0" />
+                    <span>{t("मराठी, हिंदी व इंग्रजीत आवाज सल्ला", "मराठी, हिंदी व अंग्रेजी में वॉयस सलाह", "Multilingual Vernacular Audio Readout")}</span>
+                  </li>
+                </ul>
+              </div>
+
+              <button
+                onClick={() => handleSelectRole("farmer")}
+                className="w-full py-3.5 px-5 rounded-2xl bg-[#166534] hover:bg-[#15803d] text-white text-sm font-black shadow-md flex items-center justify-center gap-2 transition-all active:scale-98"
+              >
+                <span>{t("शेतकरी म्हणून प्रवेश करा", "किसान के रूप में प्रवेश करें", "Enter as Farmer")}</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Card 2: Officer */}
+            <div className="bg-[#f4f8f4] border-2 border-[#1d3557]/30 hover:border-[#1d3557] rounded-3xl p-6 sm:p-7 flex flex-col justify-between space-y-6 shadow-sm hover:shadow-md transition-all group">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="w-14 h-14 rounded-2xl bg-[#1d3557] text-white flex items-center justify-center text-2xl shadow-sm shadow-[#1d3557]/30">
+                    🏛️
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-blue-100 text-[#1d3557] border border-blue-300 text-xs font-black">
+                    {t("अधिकारी / संशोधक व्ह्यू", "अधिकारी / शोध पोर्टल", "Officer View")}
+                  </span>
+                </div>
+
+                <div className="space-y-1.5">
+                  <h3 className="text-xl sm:text-2xl font-black text-[#0f2918] group-hover:text-[#1d3557] transition-colors">
+                    {t("कृषी व हवामान अधिकारी पोर्टल", "कृषि एवं मौसम अधिकारी पोर्टल", "Officer & Research Portal")}
+                  </h3>
+                  <p className="text-xs text-[#2b4c34] font-bold leading-relaxed">
+                    {t(
+                      "क्षेत्रीय मॉडेल अचूकता विश्लेषण, LightGBM वि. कच्चा NWP तुलना (+६२.५% त्रुटी कपात), स्थानिक टेलीमेट्री आणि भौतिकशास्त्र कॅलिब्रेशन नियंत्रण.",
+                      "क्षेत्रीय मॉडल सत्यापन, LightGBM बनाम कच्चा NWP (+62.5% त्रुटि कमी), स्थानिक टेलीमेट्री और भौतिकी अंशांकन नियंत्रण।",
+                      "Spatial validation telemetry, LightGBM downscaling vs. raw NWP benchmark (+62.5% error reduction), and physics-informed parameter controls."
+                    )}
+                  </p>
+                </div>
+
+                <ul className="space-y-2 text-xs font-bold text-[#1d3557]">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#1d3557] shrink-0" />
+                    <span>{t("१० किमी ते १ किमी मॉडेल पडताळणी", "10 किमी से 1 किमी मॉडल सत्यापन", "10 km to 1 km Model Verification")}</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#1d3557] shrink-0" />
+                    <span>{t("स्ट्रॅटिफाइड कौशल्य स्कोअरकार्ड (BSS/ROC)", "कौशल्य स्कोरकार्ड (BSS/ROC)", "Stratified Skill Scorecards & BSS")}</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#1d3557] shrink-0" />
+                    <span>{t("हवामान धोरण व आपत्कालीन नियंत्रण", "मौसम नीति व आपातकालीन नियंत्रण", "Policy & Telemetry Dispatch Controls")}</span>
+                  </li>
+                </ul>
+              </div>
+
+              <button
+                onClick={() => handleSelectRole("officer")}
+                className="w-full py-3.5 px-5 rounded-2xl bg-[#1d3557] hover:bg-[#152740] text-white text-sm font-black shadow-md flex items-center justify-center gap-2 transition-all active:scale-98"
+              >
+                <span>{t("अधिकारी म्हणून प्रवेश करा", "अधिकारी के रूप में प्रवेश करें", "Enter as Officer")}</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>
@@ -536,6 +749,186 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* ========================================================= */}
+      {/* 7. SUPABASE & DEMO DUAL ROLE LOGIN MODAL */}
+      {/* ========================================================= */}
+      {showLoginModal && (
+        <div className="fixed inset-0 z-[100] bg-black/65 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-[#eaf1ea] rounded-3xl max-w-md w-full border border-[#c3d6c4] shadow-2xl p-5 sm:p-6 space-y-4 animate-in zoom-in-95 duration-150 max-h-[95vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-[#c8d9c8] pb-3">
+              <div>
+                <span className="text-[10px] font-black text-[#166534] uppercase tracking-widest block">
+                  {t("पोर्टल प्रवेश व भूमिका निवड", "पोर्टल प्रवेश एवं भूमिका चयन", "PORTAL LOGIN & ROLE SELECTION")}
+                </span>
+                <h3 className="text-lg font-black text-[#0f2918] mt-0.5">
+                  {modalRole === "farmer"
+                    ? t("शेतकरी लॉगिन (Farmer Login)", "किसान लॉगिन (Farmer Login)", "Farmer Portal Sign In")
+                    : t("कृषी अधिकारी लॉगिन (Officer Login)", "अधिकारी लॉगिन (Officer Login)", "Officer Research Portal Sign In")}
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowLoginModal(false)}
+                className="w-8 h-8 rounded-xl bg-[#d5e4d5] hover:bg-[#c6d9c6] text-[#166534] flex items-center justify-center transition-colors"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Role Tabs */}
+            <div className="grid grid-cols-2 gap-2 bg-[#d7ead9] p-1 rounded-2xl">
+              <button
+                type="button"
+                onClick={() => {
+                  setModalRole("farmer");
+                  setAuthError(null);
+                }}
+                className={`py-2 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 ${
+                  modalRole === "farmer"
+                    ? "bg-[#166534] text-white shadow-xs"
+                    : "text-[#166534] hover:bg-[#c8decb]"
+                }`}
+              >
+                <span>🌾</span>
+                <span>{t("शेतकरी", "किसान", "Farmer")}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setModalRole("officer");
+                  setAuthError(null);
+                }}
+                className={`py-2 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 ${
+                  modalRole === "officer"
+                    ? "bg-[#1d3557] text-white shadow-xs"
+                    : "text-[#1d3557] hover:bg-[#c8decb]"
+                }`}
+              >
+                <span>🏛️</span>
+                <span>{t("अधिकारी", "अधिकारी", "Officer")}</span>
+              </button>
+            </div>
+
+            {/* 1-Click Instant Demo Button */}
+            <div className="p-3 rounded-2xl bg-white/70 border border-[#c3d6c4] space-y-2">
+              <span className="text-[10px] uppercase font-black text-[#166534] block">
+                ⚡ {t("१-क्लिक थेट डेमो प्रवेश (बिना पासवर्ड)", "1-क्लिक सीधा डेमो प्रवेश (बिना पासवर्ड)", "1-Click Instant Demo Access")}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowLoginModal(false);
+                  handleSelectRole(modalRole);
+                }}
+                className={`w-full py-2.5 px-4 rounded-xl text-xs font-black text-white flex items-center justify-center gap-2 shadow-xs transition-all active:scale-98 ${
+                  modalRole === "farmer"
+                    ? "bg-[#166534] hover:bg-[#15803d]"
+                    : "bg-[#1d3557] hover:bg-[#152740]"
+                }`}
+              >
+                <UserCheck className="w-4 h-4" />
+                <span>
+                  {modalRole === "farmer"
+                    ? t("शेतकरी थेट डॅशबोर्ड उघडा (Farmer View)", "किसान सीधा डैशबोर्ड खोलें (Farmer View)", "Open Farmer Live Dashboard")
+                    : t("अधिकारी थेट पोर्टल उघडा (Officer View)", "अधिकारी सीधा पोर्टल खोलें (Officer View)", "Open Officer & Research Portal")}
+                </span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Error Display */}
+            {authError && (
+              <div className="p-3 rounded-xl bg-red-100 border border-red-300 text-red-800 text-xs font-bold flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
+                <span>{authError}</span>
+              </div>
+            )}
+
+            {/* Credential Form */}
+            <form onSubmit={handleModalSubmit} className="space-y-3 pt-1 border-t border-[#c8d9c8]">
+              {modalRole === "farmer" ? (
+                <>
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-black text-[#0f2918]">
+                      {t("मोबाईल क्रमांक", "मोबाइल नंबर", "Mobile Phone")}
+                    </label>
+                    <input
+                      type="tel"
+                      value={farmerPhone}
+                      onChange={(e) => setFarmerPhone(e.target.value)}
+                      placeholder="9823456789"
+                      className="w-full px-3 py-2 text-xs font-bold bg-white rounded-xl border border-[#c3d6c4] focus:outline-hidden focus:border-[#166534]"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-black text-[#0f2918]">
+                      {t("४-अंकी गुप्त पिन", "4-अंकीय पिन", "4-Digit PIN")}
+                    </label>
+                    <input
+                      type="password"
+                      maxLength={4}
+                      value={farmerPin}
+                      onChange={(e) => setFarmerPin(e.target.value)}
+                      placeholder="••••"
+                      className="w-full px-3 py-2 text-xs font-bold bg-white rounded-xl border border-[#c3d6c4] focus:outline-hidden focus:border-[#166534]"
+                      required
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-black text-[#0f2918]">
+                      {t("अधिकारी आयडी किंवा ईमेल", "अधिकारी आईडी या ईमेल", "Officer ID or Email")}
+                    </label>
+                    <input
+                      type="text"
+                      value={officerId}
+                      onChange={(e) => setOfficerId(e.target.value)}
+                      placeholder="OFFICER_IMD_2026"
+                      className="w-full px-3 py-2 text-xs font-bold bg-white rounded-xl border border-[#c3d6c4] focus:outline-hidden focus:border-[#1d3557]"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-black text-[#0f2918]">
+                      {t("पासवर्ड", "पासवर्ड", "Password")}
+                    </label>
+                    <input
+                      type="password"
+                      value={officerPass}
+                      onChange={(e) => setOfficerPass(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full px-3 py-2 text-xs font-bold bg-white rounded-xl border border-[#c3d6c4] focus:outline-hidden focus:border-[#1d3557]"
+                      required
+                    />
+                  </div>
+                </>
+              )}
+
+              <button
+                type="submit"
+                disabled={authLoading}
+                className={`w-full py-2.5 px-4 rounded-xl text-xs font-black text-white flex items-center justify-center gap-2 shadow-xs transition-all active:scale-98 ${
+                  modalRole === "farmer"
+                    ? "bg-[#166534] hover:bg-[#15803d]"
+                    : "bg-[#1d3557] hover:bg-[#152740]"
+                }`}
+              >
+                <Lock className="w-3.5 h-3.5" />
+                <span>
+                  {authLoading
+                    ? t("प्रवेश होत आहे...", "प्रवेश हो रहा है...", "Authenticating...")
+                    : t("लॉगिन करा आणि पुढे चला", "लॉगिन करें और आगे बढ़ें", "Sign In & Proceed")}
+                </span>
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

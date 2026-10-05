@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
+import { useAuth } from "@/lib/AuthContext";
 import { useTranslations } from "next-intl";
 
 interface NavItem {
@@ -39,6 +40,26 @@ export const Sidebar: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
   const tN = useTranslations("nav");
+  const { user } = useAuth();
+  const isOfficer = user?.role === "officer";
+
+  // 1. Hide sidebar completely on the landing page
+  const isLandingPage =
+    pathname === "/" || pathname === "/landing" || pathname.startsWith("/landing");
+  if (isLandingPage) {
+    return null;
+  }
+
+  // 2. Filter navigation items based on role:
+  // - If Officer: Show ONLY Officer View (/officer), hide Farmer View (/dashboard)
+  // - If Farmer (or unauthenticated): Show ONLY Farmer View (/dashboard), hide Officer View (/officer)
+  const navItems = PRIMARY_NAV_KEYS.filter((item) => {
+    if (isOfficer) {
+      return item.href !== "/dashboard";
+    } else {
+      return item.href !== "/officer";
+    }
+  });
 
   return (
     <>
@@ -78,7 +99,7 @@ export const Sidebar: React.FC = () => {
 
           {/* Primary Navigation Menu */}
           <nav className="p-3 space-y-1 mt-2">
-            {PRIMARY_NAV_KEYS.map((item) => {
+            {navItems.map((item) => {
               const Icon = item.icon;
               const active = pathname === item.href;
               // Extract the translation key after the dot (e.g. "nav.dashboard" -> "dashboard")
@@ -115,11 +136,30 @@ export const Sidebar: React.FC = () => {
             })}
           </nav>
         </div>
+
+        {/* User Role Indicator at bottom of Desktop Sidebar */}
+        <div className="p-3 border-t border-[#c8d9c8] bg-[#dce8dc]/50">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-[#166534] text-white flex items-center justify-center shrink-0 text-sm shadow-2xs">
+              {isOfficer ? "🏛️" : "🌾"}
+            </div>
+            {!collapsed && (
+              <div className="min-w-0 flex-1">
+                <div className="text-[10px] font-black uppercase tracking-wider text-[#166534] truncate">
+                  {isOfficer ? "Officer View" : "Farmer View"}
+                </div>
+                <div className="text-xs font-bold text-[#0f2918] truncate">
+                  {user?.name || (isOfficer ? "Agricultural Officer" : "Farmer Hub")}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </aside>
 
       {/* 2. MOBILE BOTTOM NAVIGATION (Visible on mobile screens < md) */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#e5eee5]/95 backdrop-blur-lg border-t border-[#c8d9c8] px-2 py-1.5 shadow-lg flex items-center justify-around safe-area-bottom">
-        {PRIMARY_NAV_KEYS.map((item) => {
+        {navItems.map((item) => {
           const Icon = item.icon;
           const active = pathname === item.href;
           const tKey = item.key.split(".")[1] as Parameters<typeof tN>[0];
@@ -145,3 +185,4 @@ export const Sidebar: React.FC = () => {
     </>
   );
 };
+
