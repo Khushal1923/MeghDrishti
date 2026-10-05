@@ -59,12 +59,12 @@ export default function WeatherForecastPage() {
           </div>
 
           {/* Horizon Pills */}
-          <div className="flex items-center gap-1.5 bg-[#e4eee4] p-1 rounded-full border border-[#c3d6c4] text-xs font-bold">
+          <div className="flex items-center gap-1 bg-[#e4eee4] p-1 rounded-full border border-[#c3d6c4] text-xs font-bold overflow-x-auto no-scrollbar max-w-full shrink-0">
             {[1, 2, 3, 4, 5].map((lead) => (
               <button
                 key={lead}
                 onClick={() => setLeadDays(lead)}
-                className={`px-3 py-1 rounded-full transition-all ${
+                className={`px-2.5 sm:px-3 py-1 rounded-full transition-all shrink-0 text-[11px] sm:text-xs ${
                   leadDays === lead
                     ? "bg-[#166534] text-white shadow-xs font-extrabold"
                     : "text-[#166534] hover:text-[#0b1f11]"

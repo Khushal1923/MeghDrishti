@@ -27,9 +27,9 @@ interface NavItem {
 const PRIMARY_NAV: NavItem[] = [
   { key: "nav.dashboard", en: "Dashboard", mr: "डॅशबोर्ड", href: "/", icon: LayoutDashboard },
   { key: "nav.advisory", en: "Crop Advisory", mr: "पीक सल्ला", href: "/advisory", icon: Sprout },
-  { key: "nav.forecast", en: "Weather Forecast", mr: "हवामान अंदाज", href: "/forecast", icon: CloudSun },
-  { key: "nav.comparison", en: "Forecast Compare", mr: "अंदाज तुलना", href: "/comparison", icon: BarChart3 },
-  { key: "nav.panchayats", en: "Panchayat Directory", mr: "गाव यादी", href: "/panchayats", icon: MapPin },
+  { key: "nav.forecast", en: "Forecast", mr: "अंदाज", href: "/forecast", icon: CloudSun },
+  { key: "nav.comparison", en: "Compare", mr: "तुलना", href: "/comparison", icon: BarChart3 },
+  { key: "nav.panchayats", en: "Villages", mr: "गावे", href: "/panchayats", icon: MapPin },
 ];
 
 export const Sidebar: React.FC = () => {
@@ -38,77 +38,104 @@ export const Sidebar: React.FC = () => {
   const { language } = useLanguage();
 
   return (
-    <aside
-      className={cn(
-        "relative bg-[#e5eee5] border-r border-[#c8d9c8] flex flex-col justify-between transition-all duration-300 z-40 shrink-0 select-none shadow-xs",
-        collapsed ? "w-20" : "w-64"
-      )}
-    >
-      {/* Top Header / Logo Section */}
-      <div>
-        <div className="h-16 px-4 flex items-center justify-between border-b border-[#c8d9c8]">
-          <Link href="/" className="flex items-center gap-3 overflow-hidden">
-            <div className="w-9 h-9 rounded-xl bg-[#166534] text-white flex items-center justify-center shrink-0 shadow-sm shadow-[#166534]/20">
-              <Sprout className="w-5 h-5 text-emerald-100" />
-            </div>
-            {!collapsed && (
-              <span className="font-extrabold text-xl tracking-tight text-[#0f2918] leading-tight">
-                MeghDrishti
-              </span>
-            )}
-          </Link>
+    <>
+      {/* 1. DESKTOP SIDEBAR (Visible on md and larger screens) */}
+      <aside
+        className={cn(
+          "hidden md:flex relative bg-[#e5eee5] border-r border-[#c8d9c8] flex-col justify-between transition-all duration-300 z-40 shrink-0 select-none shadow-xs min-h-screen",
+          collapsed ? "w-20" : "w-64"
+        )}
+      >
+        <div>
+          {/* Top Header / Logo Section */}
+          <div className="h-16 px-4 flex items-center justify-between border-b border-[#c8d9c8]">
+            <Link href="/" className="flex items-center gap-3 overflow-hidden">
+              <div className="w-9 h-9 rounded-xl bg-[#166534] text-white flex items-center justify-center shrink-0 shadow-sm shadow-[#166534]/20">
+                <Sprout className="w-5 h-5 text-emerald-100" />
+              </div>
+              {!collapsed && (
+                <span className="font-extrabold text-xl tracking-tight text-[#0f2918] leading-tight">
+                  MeghDrishti
+                </span>
+              )}
+            </Link>
 
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="w-7 h-7 rounded-lg bg-[#d5e4d5] hover:bg-[#c6d9c6] text-[#166534] flex items-center justify-center transition-colors shrink-0"
-            title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-          >
-            {collapsed ? (
-              <ChevronRight className="w-4 h-4" />
-            ) : (
-              <ChevronLeft className="w-4 h-4" />
-            )}
-          </button>
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="w-7 h-7 rounded-lg bg-[#d5e4d5] hover:bg-[#c6d9c6] text-[#166534] flex items-center justify-center transition-colors shrink-0"
+              title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            >
+              {collapsed ? (
+                <ChevronRight className="w-4 h-4" />
+              ) : (
+                <ChevronLeft className="w-4 h-4" />
+              )}
+            </button>
+          </div>
+
+          {/* Primary Navigation Menu */}
+          <nav className="p-3 space-y-1 mt-2">
+            {PRIMARY_NAV.map((item) => {
+              const Icon = item.icon;
+              const active = pathname === item.href;
+              const label = language === "mr" ? item.mr : item.en;
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all group relative",
+                    active
+                      ? "bg-[#166534] text-white shadow-xs font-extrabold"
+                      : "text-[#1b3d22] hover:bg-[#d5e4d5] hover:text-[#0b1f11]"
+                  )}
+                  title={collapsed ? label : undefined}
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon
+                      className={cn(
+                        "w-4 h-4 shrink-0 transition-colors",
+                        active ? "text-white" : "text-[#166534] group-hover:text-[#0b1f11]"
+                      )}
+                    />
+                    {!collapsed && <span className="font-extrabold tracking-tight">{label}</span>}
+                  </div>
+
+                  {!collapsed && active && (
+                    <ArrowRight className="w-3.5 h-3.5 text-white/80 shrink-0" />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
         </div>
+      </aside>
 
-        {/* Primary Navigation Menu */}
-        <nav className="p-3 space-y-1 mt-2">
-          {PRIMARY_NAV.map((item) => {
-            const Icon = item.icon;
-            const active = pathname === item.href;
-            const label = language === "mr" ? item.mr : item.en;
+      {/* 2. MOBILE BOTTOM NAVIGATION (Visible on mobile screens < md) */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#e5eee5]/95 backdrop-blur-lg border-t border-[#c8d9c8] px-2 py-1.5 shadow-lg flex items-center justify-around safe-area-bottom">
+        {PRIMARY_NAV.map((item) => {
+          const Icon = item.icon;
+          const active = pathname === item.href;
+          const label = language === "mr" ? item.mr : item.en;
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all group relative",
-                  active
-                    ? "bg-[#166534] text-white shadow-xs font-extrabold"
-                    : "text-[#1b3d22] hover:bg-[#d5e4d5] hover:text-[#0b1f11]"
-                )}
-                title={collapsed ? label : undefined}
-              >
-                <div className="flex items-center gap-3">
-                  <Icon
-                    className={cn(
-                      "w-4 h-4 shrink-0 transition-colors",
-                      active ? "text-white" : "text-[#166534] group-hover:text-[#0b1f11]"
-                    )}
-                  />
-                  {!collapsed && <span className="font-extrabold tracking-tight">{label}</span>}
-                </div>
-
-                {!collapsed && active && (
-                  <ArrowRight className="w-3.5 h-3.5 text-white/80 shrink-0" />
-                )}
-              </Link>
-            );
-          })}
-        </nav>
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all min-w-[58px]",
+                active
+                  ? "text-[#166534] font-black bg-[#d7ead9]"
+                  : "text-[#2b4c34] font-bold hover:text-[#166534]"
+              )}
+            >
+              <Icon className={cn("w-5 h-5", active ? "text-[#166534]" : "text-[#2b4c34]")} />
+              <span className="text-[10px] tracking-tight mt-0.5">{label}</span>
+            </Link>
+          );
+        })}
       </div>
-    </aside>
+    </>
   );
 };
-

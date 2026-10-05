@@ -70,12 +70,12 @@ export default function PanchayatDirectoryPage() {
           </div>
 
           {/* Zone Filter Tabs */}
-          <div className="flex items-center gap-1.5 bg-[#e4eee4] p-1 rounded-full border border-[#c3d6c4] text-xs font-bold">
+          <div className="flex items-center gap-1 bg-[#e4eee4] p-1 rounded-full border border-[#c3d6c4] text-xs font-bold overflow-x-auto no-scrollbar max-w-full shrink-0">
             {["All", "Maharashtra", "Karnataka", "Telangana"].map((z) => (
               <button
                 key={z}
                 onClick={() => setSelectedZone(z)}
-                className={`px-3 py-1.5 rounded-full transition-all ${
+                className={`px-2.5 sm:px-3 py-1 rounded-full transition-all shrink-0 text-[11px] sm:text-xs ${
                   selectedZone === z
                     ? "bg-[#166534] text-white shadow-xs font-extrabold"
                     : "text-[#166534] hover:text-[#0b1f11]"
@@ -106,7 +106,7 @@ export default function PanchayatDirectoryPage() {
             </div>
 
             {/* List of Compact Panchayat Cards */}
-            <div className="space-y-2.5 max-h-[680px] overflow-y-auto pr-1">
+            <div className="space-y-2.5 max-h-[380px] lg:max-h-[680px] overflow-y-auto pr-1">
               {filteredPanchayats.map((p) => {
                 const isSelected = p.lgd_code === selectedLgd;
                 return (

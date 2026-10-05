@@ -210,7 +210,7 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
           {language === "mr" ? "पीक निवडा" : "Select Crop"}
         </label>
 
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 max-w-full">
           {CROPS.map((c) => {
             const isSelected = advisory.crop === c.id;
             const label = language === "mr" ? c.mr : c.en;
@@ -218,7 +218,7 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
               <button
                 key={c.id}
                 onClick={() => onCropChange && onCropChange(c.id)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-black border transition-all ${
+                className={`px-3 py-1.5 rounded-full text-xs font-black border transition-all shrink-0 ${
                   isSelected
                     ? "bg-[#166534] text-white border-[#166534] shadow-xs font-black"
                     : "bg-[#e6efe6] text-[#166534] border-[#c3d6c4] hover:bg-[#dbe8db]"

@@ -69,19 +69,19 @@ export default function DashboardPage() {
         {/* ========================================================= */}
         {/* 1. TOP: PANCHAYAT SELECTOR & HORIZON BAR */}
         {/* ========================================================= */}
-        <div className="bg-[#f4f8f4] border border-[#c8d9c8] rounded-2xl p-4 md:p-5 shadow-xs flex flex-wrap items-center justify-between gap-4">
+        <div className="bg-[#f4f8f4] border border-[#c8d9c8] rounded-2xl p-3.5 sm:p-5 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#d5e8d5] text-[#166534] flex items-center justify-center shrink-0">
               <Sprout className="w-5 h-5" />
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <label className="text-[10px] uppercase font-extrabold text-[#166534]/70 tracking-wider block">
                 {language === "mr" ? "निवडलेली ग्रामपंचायत" : "Selected Panchayat"}
               </label>
               <select
                 value={selectedLgd}
                 onChange={(e) => setSelectedLgd(e.target.value)}
-                className="bg-[#e4eee4] border border-[#c3d6c4] rounded-xl px-3 py-1.5 text-sm font-extrabold text-[#0f2918] focus:outline-none focus:ring-2 focus:ring-[#166534] cursor-pointer"
+                className="w-full sm:w-auto bg-[#e4eee4] border border-[#c3d6c4] rounded-xl px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-extrabold text-[#0f2918] focus:outline-none focus:ring-2 focus:ring-[#166534] cursor-pointer truncate"
               >
                 {PANCHAYATS_DATA.map((p) => (
                   <option key={p.lgd_code} value={p.lgd_code}>
@@ -93,12 +93,12 @@ export default function DashboardPage() {
           </div>
 
           {/* Lead Horizon Pills: [Today] [Tomorrow] [+2 Days] [+3 Days] [+5 Days] */}
-          <div className="flex items-center gap-1.5 bg-[#e4eee4] p-1 rounded-full border border-[#c3d6c4] text-xs font-bold">
+          <div className="flex items-center gap-1 bg-[#e4eee4] p-1 rounded-full border border-[#c3d6c4] text-xs font-bold overflow-x-auto no-scrollbar max-w-full shrink-0">
             {leadOptions.map((opt) => (
               <button
                 key={opt.value}
                 onClick={() => setLeadDays(opt.value)}
-                className={`px-3.5 py-1.5 rounded-full transition-all ${
+                className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full transition-all shrink-0 text-[11px] sm:text-xs ${
                   leadDays === opt.value
                     ? "bg-[#166534] text-white shadow-xs font-extrabold"
                     : "text-[#166534] hover:text-[#0b1f11]"
@@ -113,15 +113,15 @@ export default function DashboardPage() {
         {/* ========================================================= */}
         {/* 2. MAIN WEATHER INTELLIGENCE & AI INSIGHT SECTION */}
         {/* ========================================================= */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5">
           {/* Main Weather Intelligence Card (8 Cols) */}
-          <div className="lg:col-span-8 bg-[#f4f8f4] border border-[#c8d9c8] rounded-3xl p-6 md:p-8 shadow-xs flex flex-col justify-between space-y-6">
-            <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="lg:col-span-8 bg-[#f4f8f4] border border-[#c8d9c8] rounded-3xl p-4 sm:p-6 md:p-8 shadow-xs flex flex-col justify-between space-y-4 sm:space-y-6">
+            <div className="flex flex-wrap items-start justify-between gap-3 sm:gap-4">
               <div>
-                <span className="text-[11px] font-black text-[#166534] uppercase tracking-wider block">
+                <span className="text-[10px] sm:text-[11px] font-black text-[#166534] uppercase tracking-wider block">
                   {language === "mr" ? "स्थानिक हवामान अचूकता" : "LOCAL WEATHER INTELLIGENCE"}
                 </span>
-                <h1 className="text-2xl md:text-3xl font-black text-[#0f2918] tracking-tight mt-1">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-[#0f2918] tracking-tight mt-0.5 sm:mt-1">
                   {currentPanchayat.panchayat_name}
                 </h1>
                 <p className="text-xs text-[#0f2918] font-bold mt-0.5">
@@ -133,30 +133,30 @@ export default function DashboardPage() {
             </div>
 
             {/* Temperature & Rain Dominant Stat */}
-            <div className="flex flex-wrap items-center justify-between gap-6 py-2">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-[#d5e8d5] text-[#166534] flex items-center justify-center shrink-0 border border-[#b8d8b8] shadow-2xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 py-2">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#d5e8d5] text-[#166534] flex items-center justify-center shrink-0 border border-[#b8d8b8] shadow-2xs">
                   {rainMm > 2.5 ? (
-                    <CloudRain className="w-8 h-8 text-[#166534]" />
+                    <CloudRain className="w-7 h-7 sm:w-8 sm:h-8 text-[#166534]" />
                   ) : (
-                    <Sun className="w-8 h-8 text-amber-600" />
+                    <Sun className="w-7 h-7 sm:w-8 sm:h-8 text-amber-600" />
                   )}
                 </div>
                 <div>
-                  <div className="text-3xl md:text-4xl font-black text-[#0f2918] tracking-tight">
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-black text-[#0f2918] tracking-tight">
                     {formatTemp(tempC)}
                   </div>
-                  <div className="text-xs font-black text-[#166534] uppercase tracking-wide">
+                  <div className="text-[11px] sm:text-xs font-black text-[#166534] uppercase tracking-wide">
                     {rainCategory}
                   </div>
                 </div>
               </div>
 
-              <div className="text-right sm:border-l sm:border-[#c8d9c8] sm:pl-6">
-                <span className="text-xs text-[#166534] font-black uppercase tracking-wider block">
+              <div className="text-left sm:text-right sm:border-l sm:border-[#c8d9c8] sm:pl-6 border-t sm:border-t-0 pt-3 sm:pt-0 border-[#c8d9c8]">
+                <span className="text-[11px] sm:text-xs text-[#166534] font-black uppercase tracking-wider block">
                   {language === "mr" ? "अपेक्षित पाऊस" : "Expected Rainfall"}
                 </span>
-                <div className="text-2xl md:text-3xl font-black text-[#166534] tracking-tight mt-0.5">
+                <div className="text-xl sm:text-2xl md:text-3xl font-black text-[#166534] tracking-tight mt-0.5">
                   {formatRainfall(rainMm)}
                 </div>
                 <div className="text-xs font-bold text-[#0f2918] mt-0.5">

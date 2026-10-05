@@ -73,12 +73,12 @@ export const PanchayatMap: React.FC<PanchayatMapProps> = ({
           </h3>
         </div>
 
-        <div className="flex items-center gap-1.5 bg-[#e4eee4] p-1 rounded-full border border-[#c3d6c4] text-xs font-black">
+        <div className="flex items-center gap-1 bg-[#e4eee4] p-1 rounded-full border border-[#c3d6c4] text-xs font-black overflow-x-auto no-scrollbar max-w-full shrink-0">
           {zoneTabs.map((z) => (
             <button
               key={z.id}
               onClick={() => setZoneFilter(z.id)}
-              className={`px-3 py-1 rounded-full transition-all ${
+              className={`px-2.5 sm:px-3 py-1 rounded-full transition-all shrink-0 text-[11px] sm:text-xs ${
                 zoneFilter === z.id
                   ? "bg-[#166534] text-white shadow-xs font-black"
                   : "text-[#166534] hover:text-[#0b1f11]"
@@ -91,7 +91,7 @@ export const PanchayatMap: React.FC<PanchayatMapProps> = ({
       </div>
 
       {/* Leaflet Map with Clean OpenStreetMap Tiles & Dynamic Bounds Controller */}
-      <div className="w-full h-[280px] rounded-2xl overflow-hidden border border-[#c3d6c4] relative shadow-inner">
+      <div className="w-full h-[280px] sm:h-[340px] md:h-[400px] rounded-2xl overflow-hidden border border-[#c3d6c4] relative shadow-inner">
         <LeafletMapInner
           panchayats={panchayats}
           filtered={filtered}
