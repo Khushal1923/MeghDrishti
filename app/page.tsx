@@ -779,7 +779,7 @@ export default function LandingPage() {
             </ul>
 
             <Link
-              href="/dashboard"
+              href="/officer"
               onClick={() => loginAs("officer", "Dr. Aniruddha Deshmukh", "OFFICER_IMD_2026")}
               className="w-full py-3 bg-[#0f2918] hover:bg-[#1a3824] text-white rounded-2xl text-xs font-black text-center transition-all flex items-center justify-center gap-2 shadow-xs"
             >

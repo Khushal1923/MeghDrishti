@@ -9,6 +9,7 @@ import {
   CloudSun,
   BarChart3,
   MapPin,
+  Shield,
   ChevronLeft,
   ChevronRight,
   ChevronRight as ArrowRight,
@@ -25,7 +26,8 @@ interface NavItem {
 }
 
 const PRIMARY_NAV: NavItem[] = [
-  { key: "nav.dashboard", en: "Dashboard", mr: "डॅशबोर्ड", href: "/dashboard", icon: LayoutDashboard },
+  { key: "nav.dashboard", en: "Farmer View", mr: "शेतकरी व्ह्यू", href: "/dashboard", icon: LayoutDashboard },
+  { key: "nav.officer", en: "Officer View", mr: "अधिकारी व्ह्यू", href: "/officer", icon: Shield },
   { key: "nav.advisory", en: "Crop Advisory", mr: "पीक सल्ला", href: "/advisory", icon: Sprout },
   { key: "nav.forecast", en: "Forecast", mr: "अंदाज", href: "/forecast", icon: CloudSun },
   { key: "nav.comparison", en: "Compare", mr: "तुलना", href: "/comparison", icon: BarChart3 },

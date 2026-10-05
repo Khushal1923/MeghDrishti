@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Menu,
   X,
@@ -57,6 +57,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   const currentLang = propLang || contextLang;
   const language = currentLang;
   const pathname = usePathname();
+  const router = useRouter();
 
   const {
     user,
@@ -121,7 +122,10 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           setAuthError(res.error.message);
         } else {
           setAuthSuccess(language === "mr" ? "शेतकरी खात्यात यशस्वी प्रवेश!" : "Signed in as Farmer successfully!");
-          setTimeout(() => setShowLoginModal(false), 700);
+          setTimeout(() => {
+            setShowLoginModal(false);
+            router.push("/dashboard");
+          }, 700);
         }
       } else {
         // Sign Up
@@ -139,7 +143,10 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           setAuthError(res.error.message);
         } else {
           setAuthSuccess(language === "mr" ? "शेतकरी नोंदणी यशस्वी झाली!" : "Farmer registration successful!");
-          setTimeout(() => setShowLoginModal(false), 700);
+          setTimeout(() => {
+            setShowLoginModal(false);
+            router.push("/dashboard");
+          }, 700);
         }
       }
     } catch (err: any) {
@@ -162,7 +169,10 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           setAuthError(res.error.message);
         } else {
           setAuthSuccess(language === "mr" ? "अधिकारी खात्यात यशस्वी प्रवेश!" : "Signed in as Officer successfully!");
-          setTimeout(() => setShowLoginModal(false), 700);
+          setTimeout(() => {
+            setShowLoginModal(false);
+            router.push("/officer");
+          }, 700);
         }
       } else {
         // Sign Up
@@ -179,7 +189,10 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           setAuthError(res.error.message);
         } else {
           setAuthSuccess(language === "mr" ? "अधिकारी नोंदणी यशस्वी झाली!" : "Officer registration successful!");
-          setTimeout(() => setShowLoginModal(false), 700);
+          setTimeout(() => {
+            setShowLoginModal(false);
+            router.push("/officer");
+          }, 700);
         }
       }
     } catch (err: any) {
@@ -189,9 +202,20 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
     }
   };
 
+  const handle1ClickDemo = (role: "farmer" | "officer") => {
+    loginAs(role);
+    setShowLoginModal(false);
+    if (role === "officer") {
+      router.push("/officer");
+    } else {
+      router.push("/dashboard");
+    }
+  };
+
   const allNavItems = [
     { labelEn: "Home / Overview", labelMr: "मुख्य पान (Overview)", href: "/", icon: Globe2 },
-    { labelEn: "Live Dashboard", labelMr: "थेट डॅशबोर्ड", href: "/dashboard", icon: LayoutDashboard },
+    { labelEn: "Farmer View (Kisan)", labelMr: "शेतकरी व्ह्यू (Kisan)", href: "/dashboard", icon: LayoutDashboard },
+    { labelEn: "Officer View (Research)", labelMr: "अधिकारी व्ह्यू (Research)", href: "/officer", icon: Shield },
     { labelEn: "Crop Advisory", labelMr: "पीक सल्ला", href: "/advisory", icon: Sprout },
     { labelEn: "Weather Forecast", labelMr: "हवामान अंदाज", href: "/forecast", icon: CloudSun },
     { labelEn: "Forecast Compare", labelMr: "अंदाज तुलना", href: "/comparison", icon: BarChart3 },
@@ -629,10 +653,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                 <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-[#c8d9c8]">
                   <button
                     type="button"
-                    onClick={() => {
-                      loginAs("farmer");
-                      setShowLoginModal(false);
-                    }}
+                    onClick={() => handle1ClickDemo("farmer")}
                     className="w-full sm:w-auto text-[11px] font-black text-[#166534] hover:underline"
                   >
                     ⚡ {language === "mr" ? "१-क्लिक चाचणी शेतकरी" : "1-Click Demo Farmer"}
@@ -751,10 +772,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                 <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-[#c8d9c8]">
                   <button
                     type="button"
-                    onClick={() => {
-                      loginAs("officer");
-                      setShowLoginModal(false);
-                    }}
+                    onClick={() => handle1ClickDemo("officer")}
                     className="w-full sm:w-auto text-[11px] font-black text-[#1d3557] hover:underline"
                   >
                     ⚡ {language === "mr" ? "१-क्लिक चाचणी अधिकारी" : "1-Click Demo Officer"}
