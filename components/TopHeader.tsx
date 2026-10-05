@@ -124,14 +124,14 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
     try {
       if (authMode === "signup") {
         const selectedPanch = PANCHAYATS_DATA.find((p) => p.lgd_code === farmerVillage);
-        await signUpFarmer(
-          farmerPhone,
-          farmerPin,
-          farmerName,
-          selectedPanch ? `${selectedPanch.panchayat_name}, ${selectedPanch.district}` : "Pune, Maharashtra",
-          farmerVillage,
-          farmerCrops
-        );
+        await signUpFarmer({
+          phone: farmerPhone,
+          pin: farmerPin,
+          name: farmerName,
+          location: selectedPanch ? `${selectedPanch.panchayat_name}, ${selectedPanch.district}` : "Pune, Maharashtra",
+          panchayatLgd: farmerVillage,
+          crops: farmerCrops,
+        });
         setAuthSuccess(t("शेतकरी नोंदणी यशस्वी! थेट प्रवेश होत आहे...", "किसान पंजीकरण सफल! प्रवेश हो रहा है...", "Farmer registration successful! Redirecting..."));
       } else {
         await signInFarmer(farmerPhone, farmerPin);
@@ -157,13 +157,13 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
 
     try {
       if (authMode === "signup") {
-        await signUpOfficer(
-          officerEmail,
-          officerPass,
-          officerName,
-          officerId,
-          officerDept
-        );
+        await signUpOfficer({
+          email: officerEmail,
+          password: officerPass,
+          name: officerName,
+          officerId: officerId,
+          department: officerDept,
+        });
         setAuthSuccess(t("अधिकारी खाते तयार झाले! प्रवेश होत आहे...", "अधिकारी खाता निर्मित! प्रवेश हो रहा है...", "Officer registered! Redirecting to research portal..."));
       } else {
         await signInOfficer(officerEmail, officerPass);

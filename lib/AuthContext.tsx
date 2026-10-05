@@ -116,6 +116,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       role: role,
       roleTitleEn: role === "officer" ? "Agronomical & Meteorological Officer" : "Farmer (Kisan)",
       roleTitleMr: role === "officer" ? "कृषी व हवामान विस्तार अधिकारी" : "शेतकरी (किसान)",
+      roleTitleHi: role === "officer" ? "कृषि एवं मौसम विज्ञान अधिकारी" : "किसान (कृषक)",
       location: dbProfile?.location || meta.location || base.location,
       phone: dbProfile?.phone || meta.phone || sbUser.phone || base.phone,
       badge: role === "officer" ? "IMD / MoES Nodal Officer" : "Verified Kisan Hub",
