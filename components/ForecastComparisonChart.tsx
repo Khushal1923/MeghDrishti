@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import {
   ResponsiveContainer,
@@ -12,6 +14,8 @@ import {
 } from "recharts";
 import { CloudRain, Thermometer, CheckCircle2 } from "lucide-react";
 import { ForecastHistoryItem } from "@/lib/types";
+import { useLanguage } from "@/lib/LanguageContext";
+import { tx } from "@/lib/t";
 
 interface ForecastComparisonChartProps {
   data?: ForecastHistoryItem[];
@@ -22,6 +26,7 @@ export const ForecastComparisonChart: React.FC<ForecastComparisonChartProps> = (
   data,
   panchayatName = "Wagholi Gram Panchayat",
 }) => {
+  const { language } = useLanguage();
   const [metric, setMetric] = useState<"rainfall" | "temperature">("rainfall");
 
   // Fallback demo data if data not provided
@@ -48,10 +53,10 @@ export const ForecastComparisonChart: React.FC<ForecastComparisonChartProps> = (
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h3 className="text-lg md:text-xl font-extrabold text-[#0f2918] tracking-tight">
-            Does local correction improve the forecast?
+            {tx(language, "compQuestion")}
           </h3>
           <p className="text-xs text-[#2b4c34] mt-0.5">
-            Benchmarked against IMD Ground Truth at {panchayatName}
+            {tx(language, "benchmarkedAt")} {panchayatName}
           </p>
         </div>
 
@@ -66,7 +71,7 @@ export const ForecastComparisonChart: React.FC<ForecastComparisonChartProps> = (
             }`}
           >
             <CloudRain className="w-3.5 h-3.5" />
-            Rainfall
+            {tx(language, "rainfall")}
           </button>
           <button
             onClick={() => setMetric("temperature")}
@@ -77,7 +82,7 @@ export const ForecastComparisonChart: React.FC<ForecastComparisonChartProps> = (
             }`}
           >
             <Thermometer className="w-3.5 h-3.5" />
-            Temperature
+            {tx(language, "temperature")}
           </button>
         </div>
       </div>
@@ -86,32 +91,32 @@ export const ForecastComparisonChart: React.FC<ForecastComparisonChartProps> = (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div className="p-4 rounded-xl bg-[#e6efe6] border border-[#c3d6c4]">
           <span className="text-xs font-bold text-[#166534]/70 uppercase tracking-wider block">
-            Raw Forecast Error
+            {tx(language, "rawForecastError")}
           </span>
           <div className="text-2xl font-extrabold text-rose-700 mt-1">
             {rawError}
           </div>
-          <span className="text-[11px] text-[#2b4c34] mt-0.5 block">Coarse NWP baseline</span>
+          <span className="text-[11px] text-[#2b4c34] mt-0.5 block">{tx(language, "coarseNwpBaseline")}</span>
         </div>
 
         <div className="p-4 rounded-xl bg-[#d7ead9] border border-[#a7d4ac]">
           <span className="text-xs font-bold text-[#166534] uppercase tracking-wider block">
-            MeghDrishti Error
+            {tx(language, "meghdrishtiError")}
           </span>
           <div className="text-2xl font-extrabold text-[#166534] mt-1">
             {meghdrishtiError}
           </div>
-          <span className="text-[11px] text-[#166534] mt-0.5 block">AI local downscaling</span>
+          <span className="text-[11px] text-[#166534] mt-0.5 block">{tx(language, "localDownscaledErr")}</span>
         </div>
 
         <div className="p-4 rounded-xl bg-[#d7ead9] border border-[#a7d4ac]">
           <span className="text-xs font-bold text-[#166534] uppercase tracking-wider block">
-            Improvement
+            {tx(language, "improvementSkill")}
           </span>
           <div className="text-2xl font-extrabold text-[#166534] mt-1">
             {improvement}
           </div>
-          <span className="text-[11px] text-[#166534] mt-0.5 block">Error reduction</span>
+          <span className="text-[11px] text-[#166534] mt-0.5 block">{tx(language, "errorReduction")}</span>
         </div>
       </div>
 
@@ -142,7 +147,7 @@ export const ForecastComparisonChart: React.FC<ForecastComparisonChartProps> = (
             <Area
               type="monotone"
               dataKey={metric === "rainfall" ? "observed_rainfall" : "observed_temperature"}
-              name="Observed (IMD)"
+              name={tx(language, "legendObserved")}
               fill="#0ea5e9"
               fillOpacity={0.15}
               stroke="#0284c7"
@@ -151,7 +156,7 @@ export const ForecastComparisonChart: React.FC<ForecastComparisonChartProps> = (
             <Line
               type="monotone"
               dataKey={metric === "rainfall" ? "baseline_rainfall" : "baseline_temperature"}
-              name="Raw Forecast"
+              name={tx(language, "legendRaw")}
               stroke="#e11d48"
               strokeWidth={1.8}
               strokeDasharray="4 4"
@@ -160,7 +165,7 @@ export const ForecastComparisonChart: React.FC<ForecastComparisonChartProps> = (
             <Line
               type="monotone"
               dataKey={metric === "rainfall" ? "corrected_rainfall" : "corrected_temperature"}
-              name="MeghDrishti"
+              name={tx(language, "legendCorrected")}
               stroke="#166534"
               strokeWidth={2.5}
               dot={{ r: 4, fill: "#166534" }}
@@ -173,9 +178,21 @@ export const ForecastComparisonChart: React.FC<ForecastComparisonChartProps> = (
       <div className="flex flex-wrap items-center justify-between text-xs text-[#2b4c34] pt-3 border-t border-[#c8d9c8] font-medium">
         <div className="flex items-center gap-1.5 text-[#0f2918] font-bold">
           <CheckCircle2 className="w-4 h-4 text-[#166534]" />
-          <span>Validation Sample: 1,060 days across 3 agro-climatic zones</span>
+          <span>
+            {language === "mr"
+              ? "सत्यापन नमुना: ३ कृषी-हवामान क्षेत्रांमधील १,०६० दिवस"
+              : language === "hi"
+              ? "सत्यापन नमूना: 3 कृषि-जलवायु क्षेत्रों में 1,060 दिन"
+              : "Validation Sample: 1,060 days across 3 agro-climatic zones"}
+          </span>
         </div>
-        <span className="text-[#166534]/70">Leakage-free chronological holdout</span>
+        <span className="text-[#166534]/70">
+          {language === "mr"
+            ? "डेटा गळती-मुक्त कालानुक्रमिक होल्डआउट"
+            : language === "hi"
+            ? "डेटा लीकेज-मुक्त कालानुक्रमिक होल्डआउट"
+            : "Leakage-free chronological holdout"}
+        </span>
       </div>
     </div>
   );

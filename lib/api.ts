@@ -82,7 +82,7 @@ export async function fetchAdvisory(
 
   const p = PANCHAYATS_DATA.find((item) => item.lgd_code === lgd_code) || PANCHAYATS_DATA[0];
 
-  const cropActionMap: Record<string, { en: { action: string; why: string }; mr: { action: string; why: string } }> = {
+  const cropActionMap: Record<string, { en: { action: string; why: string }; mr: { action: string; why: string }; hi: { action: string; why: string } }> = {
     Cotton: {
       en: {
         action: "Postpone protective pesticide spraying by 48 hours; ensure drainage channels in black clay soil are unobstructed.",
@@ -91,6 +91,10 @@ export async function fetchAdvisory(
       mr: {
         action: "कीटकनाशक फवारणी २ दिवस पुढे ढकला आणि काळ्या जमिनीतील पाण्याचा निचरा होण्यासाठी शेतात चर काढा.",
         why: `अपेक्षित पाऊस आणि जमिनीतील चिकणमातीचे प्रमाण (${p.soil_clay_pct}%) यामुळे पाणी साचून बुरशीजन्य रोगांचा प्रादुर्भाव वाढू शकतो.`
+      },
+      hi: {
+        action: "कीटनाशक छिड़काव 2 दिन के लिए टालें और काली मिट्टी में जल निकासी के लिए नालियां साफ रखें।",
+        why: `अनुमानित वर्षा और मिट्टी में क्ले मात्रा (${p.soil_clay_pct}%) से जलभराव और फंगल संक्रमण का खतरा बढ़ सकता है।`
       }
     },
     Soybean: {
@@ -101,12 +105,16 @@ export async function fetchAdvisory(
       mr: {
         action: "बागायती पाणी देणे थांबवा; सकाळी स्वच्छ ऊन असताना तांबेरा नियंत्रणासाठी बुरशीनाशक फवारा.",
         why: "हवेतील आर्द्रता आणि अनुकूल तापमानामुळे शेंगा पोसण्यासाठी जमिनीतील ओलावा पुरेसा आहे."
+      },
+      hi: {
+        action: "अतिरिक्त सिंचाई रोकें; सुबह धूप निकलने पर कवकनाशी (एज़ोक्सीस्ट्रोबिन) का छिड़काव करें।",
+        why: "हवा में नमी और अनुकूल तापमान से फलियों के विकास के लिए मिट्टी में पर्याप्त नमी उपलब्ध है।"
       }
     }
   };
 
   const selected = cropActionMap[crop] || cropActionMap["Cotton"];
-  const langKey = (language === "mr" ? "mr" : "en") as "en" | "mr";
+  const langKey = (language === "mr" ? "mr" : language === "hi" ? "hi" : "en") as "en" | "mr" | "hi";
   const advice = selected[langKey] || selected["en"];
 
   return {

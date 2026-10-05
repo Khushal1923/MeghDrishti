@@ -10,19 +10,12 @@ import { fetchPrediction, fetchAdvisory } from "@/lib/api";
 import { PredictionResult, CropAdvisory } from "@/lib/types";
 import {
   Search,
-  MapPin,
-  Mountain,
-  Layers,
   Sparkles,
-  TrendingUp,
   Sprout,
-  CheckCircle2,
-  Calendar,
-  CloudRain,
-  Thermometer,
 } from "lucide-react";
-import { formatRainfall, formatTemp, formatPercent } from "@/lib/utils";
+import { formatRainfall, formatTemp } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
+import { tx } from "@/lib/t";
 
 export default function PanchayatDirectoryPage() {
   const { language, setLanguage } = useLanguage();
@@ -50,38 +43,74 @@ export default function PanchayatDirectoryPage() {
 
   const current = PANCHAYATS_DATA.find((p) => p.lgd_code === selectedLgd) || PANCHAYATS_DATA[0];
 
+  const zoneTabs = [
+    { id: "All",         label: tx(language, "zoneAll") },
+    { id: "Maharashtra", label: tx(language, "zoneMH") },
+    { id: "Karnataka",   label: tx(language, "zoneKA") },
+    { id: "Telangana",   label: tx(language, "zoneTS") },
+  ];
+
+  const getSoilType = (st: string) => {
+    if (!st) return "";
+    if (st.includes("Black Cotton")) {
+      return language === "mr" ? "काळी कसदार माती (व्हर्टिसॉल)" : language === "hi" ? "काली कपास मिट्टी (वर्टिसोल)" : st;
+    }
+    if (st.includes("Red Sandy") || st.includes("Sandy")) {
+      return language === "mr" ? "तांबडी वाळूमिश्रित माती (अल्फिसॉल)" : language === "hi" ? "लाल रेतीली मिट्टी (अल्फीसोल)" : st;
+    }
+    if (st.includes("Clay Loam")) {
+      return language === "mr" ? "चिकणमाती पोयटा (इन्सेप्टिसॉल)" : language === "hi" ? "दोमट चिकनी मिट्टी (इन्सेप्टिसोल)" : st;
+    }
+    return st;
+  };
+
+  const getTrustReason = (reason: string) => {
+    if (language === "mr") {
+      return "उच्च विश्वास: मॉडेलने मूळ कच्च्या NWP च्या तुलनेत +६४.३% त्रुटी कपात नोंदवली आहे.";
+    }
+    if (language === "hi") {
+      return "उच्च विश्वास: मॉडल ने कच्चे NWP की तुलना में +64.3% त्रुटि कमी दर्ज की है।";
+    }
+    return reason;
+  };
+
+  const tabs = [
+    { id: "overview",   label: tx(language, "tabOverview") },
+    { id: "forecast",   label: tx(language, "tabForecast") },
+    { id: "accuracy",   label: tx(language, "tabAccuracy") },
+    { id: "geography",  label: tx(language, "tabGeography") },
+    { id: "advisory",   label: tx(language, "tabAdvisory") },
+  ];
+
   return (
     <div className="flex-1 pb-16 space-y-6 bg-[#edf2ed]">
-      <TopHeader
-        language={language}
-        onLanguageChange={(l) => setLanguage(l)}
-      />
+      <TopHeader language={language} onLanguageChange={(l) => setLanguage(l)} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-5">
         {/* Header Title & Filter Bar */}
         <div className="bg-[#f4f8f4] border border-[#c8d9c8] rounded-2xl p-4 md:p-5 shadow-xs flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-xl md:text-2xl font-extrabold text-[#0f2918] tracking-tight">
-              Panchayat Weather Directory
+              {tx(language, "panchayatDir")}
             </h1>
             <p className="text-xs text-[#2b4c34] font-medium mt-0.5">
-              Explore 1 km localized downscaling for {PANCHAYATS_DATA.length} rural hubs
+              {tx(language, "panchayatSubtitle")} {PANCHAYATS_DATA.length} {tx(language, "hubs")}
             </p>
           </div>
 
           {/* Zone Filter Tabs */}
           <div className="flex items-center gap-1 bg-[#e4eee4] p-1 rounded-full border border-[#c3d6c4] text-xs font-bold overflow-x-auto no-scrollbar max-w-full shrink-0">
-            {["All", "Maharashtra", "Karnataka", "Telangana"].map((z) => (
+            {zoneTabs.map((z) => (
               <button
-                key={z}
-                onClick={() => setSelectedZone(z)}
+                key={z.id}
+                onClick={() => setSelectedZone(z.id)}
                 className={`px-2.5 sm:px-3 py-1 rounded-full transition-all shrink-0 text-[11px] sm:text-xs ${
-                  selectedZone === z
+                  selectedZone === z.id
                     ? "bg-[#166534] text-white shadow-xs font-extrabold"
                     : "text-[#166534] hover:text-[#0b1f11]"
                 }`}
               >
-                {z}
+                {z.label}
               </button>
             ))}
           </div>
@@ -89,23 +118,21 @@ export default function PanchayatDirectoryPage() {
 
         {/* 40% LEFT / 60% RIGHT Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-          {/* ========================================================= */}
-          {/* LEFT 40% (5 Cols): SEARCH & PANCHAYAT LIST */}
-          {/* ========================================================= */}
+          {/* LEFT: SEARCH & PANCHAYAT LIST */}
           <div className="lg:col-span-5 space-y-3">
             {/* Search Input */}
             <div className="relative">
               <Search className="w-4 h-4 text-[#166534]/70 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Search panchayat, district, village..."
+                placeholder={tx(language, "search")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full bg-[#f4f8f4] border border-[#c8d9c8] rounded-xl pl-10 pr-4 py-2 text-xs font-bold text-[#0f2918] focus:outline-none focus:ring-2 focus:ring-[#166534] shadow-2xs placeholder:text-[#166534]/50"
               />
             </div>
 
-            {/* List of Compact Panchayat Cards */}
+            {/* Panchayat Cards List */}
             <div className="space-y-2.5 max-h-[380px] lg:max-h-[680px] overflow-y-auto pr-1">
               {filteredPanchayats.map((p) => {
                 const isSelected = p.lgd_code === selectedLgd;
@@ -121,28 +148,20 @@ export default function PanchayatDirectoryPage() {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <h4 className="font-extrabold text-sm text-[#0f2918] leading-tight">
-                          {p.panchayat_name}
-                        </h4>
-                        <p className="text-xs text-[#2b4c34] mt-0.5 font-medium">
-                          {p.district}, {p.state}
-                        </p>
+                        <h4 className="font-extrabold text-sm text-[#0f2918] leading-tight">{p.panchayat_name}</h4>
+                        <p className="text-xs text-[#2b4c34] mt-0.5 font-medium">{p.district}, {p.state}</p>
                       </div>
                       <TrustBadge level={p.trust_label} score={p.trust_score} showIcon={false} />
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-[#c8d9c8]">
                       <div>
-                        <span className="text-[10px] text-[#166534]/70 font-bold block uppercase">Rain</span>
-                        <strong className="text-[#166534] font-extrabold">
-                          {formatRainfall(p.latest_rainfall_estimate)}
-                        </strong>
+                        <span className="text-[10px] text-[#166534]/70 font-bold block uppercase">{tx(language, "rain")}</span>
+                        <strong className="text-[#166534] font-extrabold">{formatRainfall(p.latest_rainfall_estimate)}</strong>
                       </div>
                       <div>
-                        <span className="text-[10px] text-[#166534]/70 font-bold block uppercase">Temp</span>
-                        <strong className="text-[#0f2918] font-bold">
-                          {formatTemp(p.latest_temp_estimate)}
-                        </strong>
+                        <span className="text-[10px] text-[#166534]/70 font-bold block uppercase">{tx(language, "temp").replace(":", "")}</span>
+                        <strong className="text-[#0f2918] font-bold">{formatTemp(p.latest_temp_estimate)}</strong>
                       </div>
                     </div>
                   </div>
@@ -151,17 +170,13 @@ export default function PanchayatDirectoryPage() {
             </div>
           </div>
 
-          {/* ========================================================= */}
-          {/* RIGHT 60% (7 Cols): SELECTED PANCHAYAT INTELLIGENCE PANEL */}
-          {/* ========================================================= */}
+          {/* RIGHT: SELECTED PANCHAYAT INTELLIGENCE PANEL */}
           <div className="lg:col-span-7 bg-[#f4f8f4] border border-[#c8d9c8] rounded-3xl p-5 md:p-6 shadow-xs space-y-5">
-            {/* Header: Selected Name & Trust */}
+            {/* Header */}
             <div className="flex flex-wrap items-start justify-between gap-4 pb-4 border-b border-[#c8d9c8]">
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-xl md:text-2xl font-black text-[#0f2918] tracking-tight">
-                    {current.panchayat_name}
-                  </h2>
+                  <h2 className="text-xl md:text-2xl font-black text-[#0f2918] tracking-tight">{current.panchayat_name}</h2>
                   <span className="text-[11px] bg-[#e4eee4] text-[#166534] px-2.5 py-0.5 rounded-full font-mono font-black border border-[#c3d6c4]">
                     {current.lgd_code}
                   </span>
@@ -170,23 +185,16 @@ export default function PanchayatDirectoryPage() {
                   {current.village_name} &bull; {current.taluka}, {current.district}, {current.state}
                 </p>
               </div>
-
               <TrustBadge level={current.trust_label} score={current.trust_score} />
             </div>
 
             {/* Tabs Navigation */}
-            <div className="flex items-center gap-1 border-b border-[#c8d9c8] pb-1 text-xs font-black">
-              {[
-                { id: "overview", label: "Overview" },
-                { id: "forecast", label: "Forecast" },
-                { id: "accuracy", label: "Accuracy" },
-                { id: "geography", label: "Geography" },
-                { id: "advisory", label: "Crop Advisory" },
-              ].map((tab) => (
+            <div className="flex items-center gap-1 border-b border-[#c8d9c8] pb-1 text-xs font-black overflow-x-auto no-scrollbar">
+              {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`px-3.5 py-2 rounded-xl transition-all ${
+                  className={`px-3.5 py-2 rounded-xl transition-all shrink-0 ${
                     activeTab === tab.id
                       ? "bg-[#166534] text-white font-black shadow-xs"
                       : "text-[#166534] hover:bg-[#e4eee4]"
@@ -197,42 +205,38 @@ export default function PanchayatDirectoryPage() {
               ))}
             </div>
 
-            {/* TAB CONTENT: OVERVIEW */}
+            {/* OVERVIEW TAB */}
             {activeTab === "overview" && (
               <div className="space-y-4 pt-1">
-                {/* 4 Geography Metrics: Elevation, Slope, Soil, Clay */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   <div className="p-3 rounded-xl bg-[#e6efe6] border border-[#c3d6c4]">
-                    <span className="text-[10px] text-[#166534] uppercase font-black block">Elevation</span>
-                    <strong className="text-xs md:text-sm text-[#0f2918] font-black">{current.elevation_m}m asl</strong>
+                    <span className="text-[10px] text-[#166534] uppercase font-black block">{tx(language, "elevLabel")}</span>
+                    <strong className="text-xs md:text-sm text-[#0f2918] font-black">
+                      {current.elevation_m}m {language === "mr" ? "समुद्रसपाटी" : language === "hi" ? "समुद्रतल" : "asl"}
+                    </strong>
                   </div>
                   <div className="p-3 rounded-xl bg-[#e6efe6] border border-[#c3d6c4]">
-                    <span className="text-[10px] text-[#166534] uppercase font-black block">Slope / Aspect</span>
+                    <span className="text-[10px] text-[#166534] uppercase font-black block">{tx(language, "slopeLabel")}</span>
                     <strong className="text-xs md:text-sm text-[#0f2918] font-black">{current.slope_deg}° / {current.aspect_deg}°</strong>
                   </div>
                   <div className="p-3 rounded-xl bg-[#e6efe6] border border-[#c3d6c4]">
-                    <span className="text-[10px] text-[#166534] uppercase font-black block">Soil Type</span>
+                    <span className="text-[10px] text-[#166534] uppercase font-black block">{tx(language, "soilLabel")}</span>
                     <strong className="text-xs md:text-sm text-[#0f2918] font-black truncate block" title={current.soil_type}>
-                      {current.soil_type}
+                      {getSoilType(current.soil_type)}
                     </strong>
                   </div>
                   <div className="p-3 rounded-xl bg-[#d7ead9] border border-[#a7d4ac]">
-                    <span className="text-[10px] text-[#166534] uppercase font-black block">Clay Content</span>
-                    <strong className="text-xs md:text-sm text-[#166534] font-black">{current.soil_clay_pct}% Clay</strong>
+                    <span className="text-[10px] text-[#166534] uppercase font-black block">{tx(language, "clayLabel")}</span>
+                    <strong className="text-xs md:text-sm text-[#166534] font-black">{current.soil_clay_pct}%</strong>
                   </div>
                 </div>
 
-                {/* 5-Day Forecast Mini Timeline */}
+                {/* 5-Day Mini Timeline */}
                 <div className="p-4 rounded-2xl bg-[#e6efe6] border border-[#c3d6c4] space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-black text-[#0f2918] uppercase tracking-wide">
-                      5-Day Weather Outlook
-                    </span>
-                    <span className="text-[11px] text-[#166534] font-black">
-                      {Math.round(current.trust_score * 100)}% Trust
-                    </span>
+                    <span className="text-xs font-black text-[#0f2918] uppercase tracking-wide">{tx(language, "outlookDays")}</span>
+                    <span className="text-[11px] text-[#166534] font-black">{Math.round(current.trust_score * 100)}% {tx(language, "trust")}</span>
                   </div>
-
                   <div className="grid grid-cols-5 gap-2">
                     {[1, 2, 3, 4, 5].map((d) => {
                       const r = Math.max(0, current.latest_rainfall_estimate + (d - 2) * 1.1);
@@ -248,98 +252,97 @@ export default function PanchayatDirectoryPage() {
                   </div>
                 </div>
 
-                {/* AI Trust Explanation */}
+                {/* AI Trust Insight */}
                 <div className="p-4 rounded-2xl bg-[#d7ead9] border border-[#a7d4ac] space-y-1">
                   <div className="flex items-center gap-2 text-[#166534] font-black text-xs uppercase tracking-wider">
                     <Sparkles className="w-4 h-4 text-[#166534] shrink-0" />
-                    <span>AI Trust & Calibration Insight</span>
+                    <span>{tx(language, "aiTrustCalib")}</span>
                   </div>
                   <p className="text-xs font-bold text-[#0f2918] leading-relaxed pl-6">
-                    {prediction?.trust_reason || "Calibrated on local topography, elevation lapse-rate correction, and ground-truth IMD station data within 5 km radius."}
+                    {getTrustReason(prediction?.trust_reason || current.trust_reason)}
                   </p>
                 </div>
 
-                {/* Crop Recommendation Summary */}
+                {/* Crop Recommendation */}
                 <div className="p-4 rounded-2xl bg-[#f4f8f4] border border-[#c8d9c8] space-y-1.5 shadow-2xs">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-[#166534] font-black text-xs uppercase tracking-wider">
                       <Sprout className="w-4 h-4 text-[#166534]" />
-                      <span>Crop Recommendation (Cotton &bull; Flowering)</span>
+                      <span>{tx(language, "cropRecommSummary")}</span>
                     </div>
                     <span className="text-xs font-black px-2 py-0.5 rounded-full bg-[#d7ead9] text-[#166534] border border-[#a7d4ac]">
-                      Good Window
+                      {tx(language, "goodWindow")}
                     </span>
                   </div>
                   <p className="text-xs text-[#0f2918] font-black pl-6">
-                    {advisory?.recommended_action || "Suitable conditions for field activity. Proceed with planned intercultural operations."}
+                    {advisory?.recommended_action || tx(language, "defaultAdvisory")}
                   </p>
                 </div>
               </div>
             )}
 
-
-            {/* TAB CONTENT: FORECAST */}
+            {/* FORECAST TAB */}
             {activeTab === "forecast" && prediction && (
               <div className="pt-1">
                 <ForecastCard data={prediction} />
               </div>
             )}
 
-            {/* TAB CONTENT: ACCURACY */}
+            {/* ACCURACY TAB */}
             {activeTab === "accuracy" && (
               <div className="space-y-4 pt-1">
                 <div className="grid grid-cols-3 gap-3">
                   <div className="p-3.5 rounded-xl bg-[#e6efe6] border border-[#c3d6c4]">
-                    <span className="text-[11px] text-[#166534]/70 font-bold block uppercase">Raw NWP Error</span>
+                    <span className="text-[11px] text-[#166534]/70 font-bold block uppercase">{tx(language, "rawNwpErr")}</span>
                     <div className="text-xl font-extrabold text-rose-700 mt-1">1.84 mm</div>
-                    <span className="text-[10px] text-[#2b4c34]">Baseline MAE</span>
+                    <span className="text-[10px] text-[#2b4c34]">{tx(language, "baselineMAE")}</span>
                   </div>
                   <div className="p-3.5 rounded-xl bg-[#d7ead9] border border-[#a7d4ac]">
                     <span className="text-[11px] text-[#166534] font-bold block uppercase">MeghDrishti</span>
                     <div className="text-xl font-extrabold text-[#166534] mt-1">0.68 mm</div>
-                    <span className="text-[10px] text-[#166534]">Downscaled MAE</span>
+                    <span className="text-[10px] text-[#166534]">{tx(language, "downscaledMAE")}</span>
                   </div>
                   <div className="p-3.5 rounded-xl bg-[#d7ead9] border border-[#a7d4ac]">
-                    <span className="text-[11px] text-[#166534] font-bold block uppercase">Skill Boost</span>
+                    <span className="text-[11px] text-[#166534] font-bold block uppercase">{tx(language, "skillBoost")}</span>
                     <div className="text-xl font-extrabold text-[#166534] mt-1">+63.0%</div>
-                    <span className="text-[10px] text-[#166534]">Error reduction</span>
+                    <span className="text-[10px] text-[#166534]">{tx(language, "errorReduction")}</span>
                   </div>
                 </div>
 
                 <div className="p-4 rounded-xl bg-[#e6efe6] border border-[#c3d6c4] text-xs text-[#2b4c34] space-y-1 font-medium">
-                  <div className="font-extrabold text-[#0f2918]">Station & Validation Record:</div>
-                  <div>&bull; Nearest IMD Automatic Weather Station: <strong>4.8 km</strong></div>
-                  <div>&bull; Total Validated Chronological Records: <strong>4,560 pairs</strong></div>
-                  <div>&bull; False Alarm Ratio: <strong>0.106</strong> | Probability of Detection: <strong>0.856</strong></div>
+                  <div className="font-extrabold text-[#0f2918]">{tx(language, "stationRecord")}</div>
+                  <div>&bull; {tx(language, "nearestStation")} <strong>4.8 km</strong></div>
+                  <div>&bull; {tx(language, "totalValidated")} <strong>4,560 {language === "mr" ? "नोंदी" : language === "hi" ? "जोड़े" : "pairs"}</strong></div>
+                  <div>&bull; {tx(language, "falseAlarm")} <strong>0.106</strong></div>
                 </div>
               </div>
             )}
 
-            {/* TAB CONTENT: GEOGRAPHY */}
+            {/* GEOGRAPHY TAB */}
             {activeTab === "geography" && (
               <div className="space-y-4 pt-1">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div className="p-3 rounded-xl bg-[#e6efe6] border border-[#c3d6c4]">
-                    <span className="text-[10px] text-[#166534]/70 uppercase font-bold block">Cropland</span>
+                    <span className="text-[10px] text-[#166534]/70 uppercase font-bold block">{tx(language, "cropland")}</span>
                     <strong className="text-sm font-extrabold text-[#0f2918]">{Math.round(current.cropland_frac * 100)}%</strong>
                   </div>
                   <div className="p-3 rounded-xl bg-[#e6efe6] border border-[#c3d6c4]">
-                    <span className="text-[10px] text-[#166534]/70 uppercase font-bold block">Tree Cover</span>
+                    <span className="text-[10px] text-[#166534]/70 uppercase font-bold block">{tx(language, "treeCover")}</span>
                     <strong className="text-sm font-extrabold text-[#0f2918]">{Math.round(current.forest_frac * 100)}%</strong>
                   </div>
                   <div className="p-3 rounded-xl bg-[#e6efe6] border border-[#c3d6c4]">
-                    <span className="text-[10px] text-[#166534]/70 uppercase font-bold block">Settlement</span>
+                    <span className="text-[10px] text-[#166534]/70 uppercase font-bold block">{tx(language, "settlement")}</span>
                     <strong className="text-sm font-extrabold text-[#0f2918]">{Math.round(current.builtup_frac * 100)}%</strong>
                   </div>
                   <div className="p-3 rounded-xl bg-[#e6efe6] border border-[#c3d6c4]">
-                    <span className="text-[10px] text-[#166534]/70 uppercase font-bold block">Coordinates</span>
+                    <span className="text-[10px] text-[#166534]/70 uppercase font-bold block">{tx(language, "coordinates")}</span>
                     <strong className="text-xs font-mono font-bold text-[#0f2918]">{current.latitude.toFixed(2)}°N, {current.longitude.toFixed(2)}°E</strong>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* TAB CONTENT: ADVISORY */}
+            {/* ADVISORY TAB */}
             {activeTab === "advisory" && advisory && (
               <div className="pt-1">
                 <AdvisoryCard advisory={advisory} />

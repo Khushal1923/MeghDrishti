@@ -10,6 +10,7 @@ export interface UserProfile {
   role: UserRole;
   roleTitleEn: string;
   roleTitleMr: string;
+  roleTitleHi: string;
   location: string;
   phone: string;
   badge: string;
@@ -22,6 +23,7 @@ export const DEMO_USERS: Record<"farmer" | "officer", UserProfile> = {
     role: "farmer",
     roleTitleEn: "Farmer (Kisan)",
     roleTitleMr: "शेतकरी (किसान)",
+    roleTitleHi: "किसान (कृषक)",
     location: "Wagholi Gram Panchayat, Pune",
     phone: "9823456789",
     badge: "Verified Kisan Hub",
@@ -32,6 +34,7 @@ export const DEMO_USERS: Record<"farmer" | "officer", UserProfile> = {
     role: "officer",
     roleTitleEn: "Agronomical & Meteorological Officer",
     roleTitleMr: "कृषी व हवामान विस्तार अधिकारी",
+    roleTitleHi: "कृषि एवं मौसम विज्ञान अधिकारी",
     location: "IMD District Nodal Cell, Pune Division",
     phone: "9876543210",
     badge: "IMD / MoES Nodal Officer",

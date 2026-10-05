@@ -15,9 +15,11 @@ import {
 } from "lucide-react";
 import { formatRainfall, formatTemp, formatPercent } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
+import { useTranslations } from "next-intl";
 
 export default function DashboardPage() {
   const { language, setLanguage } = useLanguage();
+  const t = useTranslations("dashboard");
   const [selectedLgd, setSelectedLgd] = useState<string>("MH_PUN_001");
   const [leadDays, setLeadDays] = useState<number>(1);
   const [prediction, setPrediction] = useState<PredictionResult | null>(null);
@@ -30,11 +32,11 @@ export default function DashboardPage() {
   }, [selectedLgd, leadDays]);
 
   const leadOptions = [
-    { label: "Today", value: 1, marathi: "आज" },
-    { label: "Tomorrow", value: 2, marathi: "उद्या" },
-    { label: "+2 Days", value: 3, marathi: "+२ दिवस" },
-    { label: "+3 Days", value: 4, marathi: "+३ दिवस" },
-    { label: "+5 Days", value: 5, marathi: "+५ दिवस" },
+    { label: t("today"), value: 1 },
+    { label: t("tomorrow"), value: 2 },
+    { label: t("day2"), value: 3 },
+    { label: t("day3"), value: 4 },
+    { label: t("day5"), value: 5 },
   ];
 
   const rainMm = prediction ? prediction.estimate : currentPanchayat.latest_rainfall_estimate;
@@ -42,16 +44,32 @@ export default function DashboardPage() {
   const rainProb = prediction ? prediction.rain_prob : currentPanchayat.latest_rain_prob;
   
   const getRainCategory = (mm: number) => {
-    if (language === "mr") {
-      if (mm < 0.1) return "निरभ्र / पाऊस नाही";
-      if (mm < 2.5) return "अति हलका पाऊस";
-      if (mm <= 15.5) return "हलका पाऊस";
-      return "मध्यम ते जोरदार पाऊस";
+    if (mm < 0.1) return t("noRain");
+    if (mm < 2.5) return t("veryLight");
+    if (mm <= 15.5) return t("lightRain");
+    return t("moderateRain");
+  };
+
+  const getTrustLabel = (lbl: string) => {
+    const l = lbl?.toLowerCase() || "";
+    if (l === "high") return language === "mr" ? "उच्च" : language === "hi" ? "उच्च" : "High";
+    if (l === "medium") return language === "mr" ? "मध्यम" : language === "hi" ? "मध्यम" : "Medium";
+    if (l === "low") return language === "mr" ? "कमी" : language === "hi" ? "निम्न" : "Low";
+    return lbl;
+  };
+
+  const getSoilType = (st: string) => {
+    if (!st) return "";
+    if (st.includes("Black Cotton")) {
+      return language === "mr" ? "काळी कसदार माती (व्हर्टिसॉल)" : language === "hi" ? "काली कपास मिट्टी (वर्टिसोल)" : st;
     }
-    if (mm < 0.1) return "No Rain";
-    if (mm < 2.5) return "Very Light";
-    if (mm <= 15.5) return "Light Rain";
-    return "Moderate Rain";
+    if (st.includes("Red Sandy") || st.includes("Sandy")) {
+      return language === "mr" ? "तांबडी वाळूमिश्रित माती (अल्फिसॉल)" : language === "hi" ? "लाल रेतीली मिट्टी (अल्फीसोल)" : st;
+    }
+    if (st.includes("Clay Loam")) {
+      return language === "mr" ? "चिकणमाती पोयटा (इन्सेप्टिसॉल)" : language === "hi" ? "दोमट चिकनी मिट्टी (इन्सेप्टिसोल)" : st;
+    }
+    return st;
   };
 
   const rainCategory = getRainCategory(rainMm);
@@ -76,7 +94,7 @@ export default function DashboardPage() {
             </div>
             <div className="min-w-0 flex-1">
               <label className="text-[10px] uppercase font-extrabold text-[#166534]/70 tracking-wider block">
-                {language === "mr" ? "निवडलेली ग्रामपंचायत" : "Selected Panchayat"}
+                {t("selectedPanchayat")}
               </label>
               <select
                 value={selectedLgd}
@@ -104,7 +122,7 @@ export default function DashboardPage() {
                     : "text-[#166534] hover:text-[#0b1f11]"
                 }`}
               >
-                {language === "mr" ? opt.marathi : opt.label}
+                {opt.label}
               </button>
             ))}
           </div>
@@ -119,7 +137,7 @@ export default function DashboardPage() {
             <div className="flex flex-wrap items-start justify-between gap-3 sm:gap-4">
               <div>
                 <span className="text-[10px] sm:text-[11px] font-black text-[#166534] uppercase tracking-wider block">
-                  {language === "mr" ? "स्थानिक हवामान अचूकता" : "LOCAL WEATHER INTELLIGENCE"}
+                  {t("localWeather")}
                 </span>
                 <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-[#0f2918] tracking-tight mt-0.5 sm:mt-1">
                   {currentPanchayat.panchayat_name}
@@ -154,13 +172,13 @@ export default function DashboardPage() {
 
               <div className="text-left sm:text-right sm:border-l sm:border-[#c8d9c8] sm:pl-6 border-t sm:border-t-0 pt-3 sm:pt-0 border-[#c8d9c8]">
                 <span className="text-[11px] sm:text-xs text-[#166534] font-black uppercase tracking-wider block">
-                  {language === "mr" ? "अपेक्षित पाऊस" : "Expected Rainfall"}
+                  {t("expectedRainfall")}
                 </span>
                 <div className="text-xl sm:text-2xl md:text-3xl font-black text-[#166534] tracking-tight mt-0.5">
                   {formatRainfall(rainMm)}
                 </div>
                 <div className="text-xs font-bold text-[#0f2918] mt-0.5">
-                  {language === "mr" ? "शक्यता" : "P(Rain)"}: <strong className="text-sky-800 font-extrabold">{formatPercent(rainProb)}</strong>
+                  {t("rainProb")}: <strong className="text-sky-800 font-extrabold">{formatPercent(rainProb)}</strong>
                 </div>
               </div>
             </div>
@@ -169,25 +187,29 @@ export default function DashboardPage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-4 border-t border-[#c8d9c8] text-xs">
               <div className="p-2.5 rounded-xl bg-[#e6efe6] border border-[#c3d6c4]">
                 <span className="text-[10px] text-[#166534] font-black block uppercase">
-                  {language === "mr" ? "उंची (समुद्रसपाटी)" : "Elevation"}
+                  {t("elevation")}
                 </span>
-                <strong className="text-[#0f2918] font-black">{currentPanchayat.elevation_m}m asl</strong>
+                <strong className="text-[#0f2918] font-black">
+                  {currentPanchayat.elevation_m}m {language === "mr" ? "समुद्रसपाटी" : language === "hi" ? "समुद्रतल" : "asl"}
+                </strong>
               </div>
               <div className="p-2.5 rounded-xl bg-[#e6efe6] border border-[#c3d6c4]">
                 <span className="text-[10px] text-[#166534] font-black block uppercase">
-                  {language === "mr" ? "जमिनीचा प्रकार" : "Soil Type"}
+                  {t("soilType")}
                 </span>
-                <strong className="text-[#0f2918] font-black truncate block">{currentPanchayat.soil_type}</strong>
+                <strong className="text-[#0f2918] font-black truncate block">
+                  {getSoilType(currentPanchayat.soil_type)}
+                </strong>
               </div>
               <div className="p-2.5 rounded-xl bg-[#e6efe6] border border-[#c3d6c4]">
                 <span className="text-[10px] text-[#166534] font-black block uppercase">
-                  {language === "mr" ? "वाऱ्याचा वेग" : "Wind Speed"}
+                  {t("windSpeed")}
                 </span>
                 <strong className="text-[#0f2918] font-black">{prediction?.wind_kmh || 12} km/h</strong>
               </div>
               <div className="p-2.5 rounded-xl bg-[#e6efe6] border border-[#c3d6c4]">
                 <span className="text-[10px] text-[#166534] font-black block uppercase">
-                  {language === "mr" ? "हवेतील आर्द्रता" : "Humidity"}
+                  {t("humidity")}
                 </span>
                 <strong className="text-[#0f2918] font-black">{prediction?.humidity_proxy || 68}%</strong>
               </div>
@@ -199,30 +221,26 @@ export default function DashboardPage() {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <span className="px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[11px] font-black uppercase tracking-wider">
-                  {language === "mr" ? "स्थानिक AI दुरुस्ती" : "AI LOCAL CORRECTION"}
+                  {t("aiCorrection")}
                 </span>
                 <span className="text-xs font-black text-emerald-200">
-                  {Math.round(trustScore * 100)}% {language === "mr" ? "विश्वास" : "Trust"}
+                  {Math.round(trustScore * 100)}% {t("trust")}
                 </span>
               </div>
 
               <h2 className="text-lg md:text-xl font-black text-white tracking-tight leading-snug">
-                {language === "mr"
-                  ? "स्थानिक टोपोग्राफी व उंचीनुसार अचूक अंदाज"
-                  : "Terrain & bias-corrected panchayat forecast"}
+                {t("terrainTitle")}
               </h2>
 
               <p className="text-xs text-emerald-100 font-bold leading-relaxed">
-                {language === "mr"
-                  ? "स्थानिक टोपोग्राफी, लॅप्स-रेट उंची व IMD नेटवर्क आधारे अंदाज अचूक करण्यात आला आहे."
-                  : "Forecast adjusted for local terrain, lapse-rate elevation and IMD ground network."}
+                {t("terrainDesc")}
               </p>
             </div>
 
             <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-xs border border-white/15 space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-emerald-200 font-black uppercase tracking-wide">
-                  {language === "mr" ? "त्रुटी कपात (MAE)" : "Error Reduction (MAE)"}
+                  {t("errorReduction")}
                 </span>
                 <span className="text-lg font-black text-[#fef08a]">+62.5%</span>
               </div>
@@ -230,9 +248,7 @@ export default function DashboardPage() {
                 <div className="bg-[#fef08a] h-full rounded-full w-[62.5%]" />
               </div>
               <div className="text-[11px] text-emerald-200 font-bold">
-                {language === "mr"
-                  ? "१० किमी मॉडेलवरून १ किमी अचूक गावपातळीवर रुपांतरित"
-                  : "Downscaled from 10km raw NWP to 1km resolution"}
+                {t("downscaled")}
               </div>
             </div>
           </div>
@@ -244,7 +260,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <div className="p-4 rounded-2xl bg-[#f4f8f4] border border-[#c8d9c8] shadow-2xs space-y-1">
             <span className="text-[11px] font-black text-[#166534] uppercase tracking-wider block">
-              {language === "mr" ? "पाऊस" : "Rainfall"}
+              {t("rainfall")}
             </span>
             <div className="text-2xl font-black text-[#0f2918]">
               {formatRainfall(rainMm)}
@@ -256,37 +272,37 @@ export default function DashboardPage() {
 
           <div className="p-4 rounded-2xl bg-[#f4f8f4] border border-[#c8d9c8] shadow-2xs space-y-1">
             <span className="text-[11px] font-black text-[#166534] uppercase tracking-wider block">
-              {language === "mr" ? "तापमान" : "Temperature"}
+              {t("temperature")}
             </span>
             <div className="text-2xl font-black text-[#0f2918]">
               {formatTemp(tempC)}
             </div>
             <span className="text-xs font-bold text-[#0f2918] block">
-              {language === "mr" ? "उंचीनुसार अचूक" : "Lapse corrected"}
+              {t("lapseCorrect")}
             </span>
           </div>
 
           <div className="p-4 rounded-2xl bg-[#f4f8f4] border border-[#c8d9c8] shadow-2xs space-y-1">
             <span className="text-[11px] font-black text-[#166534] uppercase tracking-wider block">
-              {language === "mr" ? "पावसाची शक्यता" : "Rain Probability"}
+              {t("rainProbability")}
             </span>
             <div className="text-2xl font-black text-sky-800">
               {formatPercent(rainProb)}
             </div>
             <span className="text-xs font-bold text-[#0f2918] block">
-              &ge; 2.5 mm {language === "mr" ? "निकष" : "threshold"}
+              &ge; 2.5 mm {t("threshold")}
             </span>
           </div>
 
           <div className="p-4 rounded-2xl bg-[#f4f8f4] border border-[#c8d9c8] shadow-2xs space-y-1">
             <span className="text-[11px] font-black text-[#166534] uppercase tracking-wider block">
-              {language === "mr" ? "AI विश्वासार्हता" : "AI Trust"}
+              {t("aiTrust")}
             </span>
             <div className="text-2xl font-black text-[#166534]">
               {Math.round(trustScore * 100)}%
             </div>
             <span className="text-xs font-extrabold text-[#166534] block">
-              {currentPanchayat.trust_label} {language === "mr" ? "खात्री" : "Confidence"}
+              {getTrustLabel(currentPanchayat.trust_label)} {t("confidence")}
             </span>
           </div>
         </div>
@@ -297,10 +313,10 @@ export default function DashboardPage() {
         <div className="bg-[#f4f8f4] border border-[#c8d9c8] rounded-3xl p-5 md:p-6 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-extrabold text-[#0f2918] tracking-tight">
-              {language === "mr" ? "५ दिवसांचा स्थानिक हवामान अंदाज" : "5-Day Weather Outlook"}
+              {t("outlook5Day")}
             </h2>
             <span className="text-xs text-[#2b4c34] font-semibold">
-              {currentPanchayat.panchayat_name} Hub
+              {currentPanchayat.panchayat_name} {language === "mr" ? "हब / केंद्र" : language === "hi" ? "हब / केंद्र" : "Hub"}
             </span>
           </div>
 
@@ -311,9 +327,8 @@ export default function DashboardPage() {
               const dayProb = Math.min(0.95, currentPanchayat.latest_rain_prob + (day - 1) * 0.05);
               const isSelected = leadDays === day;
 
-              const dayNamesEn = ["Today", "Tomorrow", "Day +2", "Day +3", "Day +5"];
-              const dayNamesMr = ["आज", "उद्या", "+२ दिवस", "+३ दिवस", "+५ दिवस"];
-              const dayLabel = language === "mr" ? dayNamesMr[day - 1] : dayNamesEn[day - 1];
+              const dayLabels = [t("today"), t("tomorrow"), t("day2"), t("day3"), t("day5")];
+              const dayLabel = dayLabels[day - 1];
 
               return (
                 <div
@@ -334,7 +349,7 @@ export default function DashboardPage() {
 
                   <div>
                     <span className="text-[10px] text-[#166534]/70 block font-medium">
-                      {language === "mr" ? "पाऊस" : "Rain"}
+                      {t("rain")}
                     </span>
                     <div className="text-base font-extrabold text-[#0f2918]">
                       {formatRainfall(dayRain)}
@@ -346,7 +361,7 @@ export default function DashboardPage() {
                   </div>
 
                   <div className="text-[10px] text-[#2b4c34] pt-1 border-t border-[#c8d9c8] flex items-center justify-between font-medium">
-                    <span>{language === "mr" ? "शक्यता" : "P(Rain)"}</span>
+                    <span>{t("probability")}</span>
                     <strong className="text-sky-800 font-bold">{formatPercent(dayProb)}</strong>
                   </div>
                 </div>
@@ -374,17 +389,15 @@ export default function DashboardPage() {
             <ShieldCheck className="w-5 h-5 text-[#166534] shrink-0" />
             <div>
               <strong className="text-[#0f2918] font-extrabold">
-                {language === "mr" ? "मेघदृष्टी AI स्थानिक हवामान प्रणाली" : "MeghDrishti AI Downscaling Engine"}
+                {t("engineTitle")}
               </strong>
               <span className="text-[#2b4c34] ml-2">
-                {language === "mr"
-                  ? "हवामान केंद्र अंतर: ४.८ किमी • १,०६० दिवस पडताळणी • खोटा इशारा दर (FAR): ०.१०६"
-                  : "Station distance: 4.8 km • 1,060 test days validated • False Alarm Ratio: 0.106"}
+                {t("engineDesc")}
               </span>
             </div>
           </div>
           <div className="font-bold text-[#166534]">
-            {language === "mr" ? "९०% खात्रीशीर मर्यादा सक्रिय" : "Calibrated 90% Confidence Interval Active"}
+            {t("calibrated")}
           </div>
         </div>
       </div>

@@ -1,9 +1,13 @@
+"use client";
+
 import React from "react";
 import { CloudRain, Thermometer, Wind, Droplets, ArrowDownRight, Compass, ShieldCheck } from "lucide-react";
 import { PredictionResult } from "@/lib/types";
 import { TrustBadge } from "./TrustBadge";
 import { ForecastRange } from "./ForecastRange";
 import { formatRainfall, formatTemp, formatPercent } from "@/lib/utils";
+import { useLanguage } from "@/lib/LanguageContext";
+import { tx } from "@/lib/t";
 
 interface ForecastCardProps {
   data: PredictionResult;
@@ -14,8 +18,28 @@ export const ForecastCard: React.FC<ForecastCardProps> = ({
   data,
   onLeadChange,
 }) => {
+  const { language } = useLanguage();
   const rainDiff = data.estimate - data.baseline;
   const tempDiff = data.corrected_temp - data.baseline_temp;
+
+  const getCategoryLabel = (cat: string) => {
+    if (!cat) return "";
+    if (language === "mr") {
+      if (cat.includes("No")) return "निरभ्र / पाऊस नाही";
+      if (cat.includes("Very")) return "अति हलका पाऊस";
+      if (cat.includes("Light")) return "हलका पाऊस";
+      if (cat.includes("Moderate")) return "मध्यम पाऊस";
+      return cat;
+    }
+    if (language === "hi") {
+      if (cat.includes("No")) return "कोई बारिश नहीं";
+      if (cat.includes("Very")) return "बहुत हल्की बारिश";
+      if (cat.includes("Light")) return "हल्की बारिश";
+      if (cat.includes("Moderate")) return "मध्यम बारिश";
+      return cat;
+    }
+    return cat;
+  };
 
   return (
     <div className="bg-[#f4f8f4] border border-[#c8d9c8] rounded-2xl p-5 md:p-6 shadow-xs space-y-5">
@@ -66,11 +90,11 @@ export const ForecastCard: React.FC<ForecastCardProps> = ({
                 <CloudRain className="w-4 h-4" />
               </div>
               <span className="text-xs font-extrabold text-[#0f2918] uppercase tracking-wider">
-                Rainfall Downscaling
+                {tx(language, "rainDownscaling")}
               </span>
             </div>
             <span className="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-[#d5e8d5] text-[#166534] border border-[#b8d8b8]">
-              {data.rain_category}
+              {getCategoryLabel(data.rain_category)}
             </span>
           </div>
 
@@ -80,17 +104,17 @@ export const ForecastCard: React.FC<ForecastCardProps> = ({
                 {formatRainfall(data.estimate)}
               </div>
               <div className="text-xs text-[#166534] mt-0.5 font-extrabold">
-                MeghDrishti Local AI
+                {tx(language, "localAI")}
               </div>
             </div>
 
             <div className="text-right">
               <div className="text-xs font-bold text-[#2b4c34]/70 line-through">
-                Raw: {formatRainfall(data.baseline)}
+                {tx(language, "rawForecastLabel")}: {formatRainfall(data.baseline)}
               </div>
               <div className="text-xs font-extrabold text-[#166534] flex items-center justify-end gap-0.5 mt-0.5">
                 <ArrowDownRight className="w-3.5 h-3.5" />
-                <span>{Math.abs(rainDiff).toFixed(1)} mm adjusted</span>
+                <span>{Math.abs(rainDiff).toFixed(1)} mm {tx(language, "adjusted")}</span>
               </div>
             </div>
           </div>
@@ -105,7 +129,7 @@ export const ForecastCard: React.FC<ForecastCardProps> = ({
           />
 
           <div className="flex items-center justify-between text-xs pt-2 border-t border-[#c3d6c4] text-[#0f2918] font-bold">
-            <span>Rain Probability (&ge; 2.5 mm):</span>
+            <span>{tx(language, "rainProb")} (&ge; 2.5 mm):</span>
             <strong className="text-sky-800 font-extrabold">
               {formatPercent(data.rain_prob)}
             </strong>
@@ -120,11 +144,11 @@ export const ForecastCard: React.FC<ForecastCardProps> = ({
                 <Thermometer className="w-4 h-4" />
               </div>
               <span className="text-xs font-extrabold text-[#0f2918] uppercase tracking-wider">
-                Temperature & Terrain
+                {tx(language, "tempTerrain")}
               </span>
             </div>
             <span className="text-xs text-[#0f2918] font-bold">
-              Elev: {data.elevation_m}m
+              {tx(language, "elevation")}: {data.elevation_m}m
             </span>
           </div>
 
@@ -134,13 +158,13 @@ export const ForecastCard: React.FC<ForecastCardProps> = ({
                 {formatTemp(data.corrected_temp)}
               </div>
               <div className="text-xs text-[#166534] mt-0.5 font-extrabold">
-                Terrain Corrected
+                {tx(language, "terrainCorrected")}
               </div>
             </div>
 
             <div className="text-right">
               <div className="text-xs font-bold text-[#2b4c34]/70">
-                Raw: {formatTemp(data.baseline_temp)}
+                {tx(language, "rawForecastLabel")}: {formatTemp(data.baseline_temp)}
               </div>
               <div className="text-xs font-extrabold text-[#0f2918] mt-0.5">
                 Δ {tempDiff > 0 ? `+${tempDiff.toFixed(1)}` : tempDiff.toFixed(1)} °C
@@ -153,7 +177,7 @@ export const ForecastCard: React.FC<ForecastCardProps> = ({
             <div className="p-2.5 rounded-xl bg-[#dbe8db] border border-[#c3d6c4] flex items-center gap-2">
               <Droplets className="w-4 h-4 text-sky-700 shrink-0" />
               <div>
-                <div className="text-[10px] text-[#166534] font-black uppercase">Humidity</div>
+                <div className="text-[10px] text-[#166534] font-black uppercase">{tx(language, "humidity")}</div>
                 <div className="text-xs font-black text-[#0f2918]">
                   {data.humidity_proxy}%
                 </div>
@@ -163,7 +187,7 @@ export const ForecastCard: React.FC<ForecastCardProps> = ({
             <div className="p-2.5 rounded-xl bg-[#dbe8db] border border-[#c3d6c4] flex items-center gap-2">
               <Wind className="w-4 h-4 text-[#166534] shrink-0" />
               <div>
-                <div className="text-[10px] text-[#166534] font-black uppercase">Wind</div>
+                <div className="text-[10px] text-[#166534] font-black uppercase">{tx(language, "wind")}</div>
                 <div className="text-xs font-black text-[#0f2918]">
                   {data.wind_kmh} km/h
                 </div>
@@ -173,7 +197,7 @@ export const ForecastCard: React.FC<ForecastCardProps> = ({
 
           <div className="text-xs text-[#0f2918] pt-2 border-t border-[#c3d6c4] flex items-center gap-1.5 font-bold">
             <Compass className="w-3.5 h-3.5 text-[#166534]" />
-            <span>Resolution: <strong className="font-extrabold text-[#166534]">Panchayat / 1 km Scale</strong></span>
+            <span>{tx(language, "resolutionScale")}</span>
           </div>
 
         </div>
@@ -183,7 +207,7 @@ export const ForecastCard: React.FC<ForecastCardProps> = ({
       <div className="p-3.5 rounded-xl bg-[#d7ead9] border border-[#a7d4ac] flex items-start gap-3">
         <ShieldCheck className="w-4 h-4 text-[#166534] shrink-0 mt-0.5" />
         <div className="text-xs text-[#0f2918] font-medium leading-relaxed">
-          <strong className="font-extrabold text-[#166534]">AI Correction Insight: </strong>
+          <strong className="font-extrabold text-[#166534]">{tx(language, "aiCorrectionInsight")}{" "}</strong>
           {data.trust_reason}
         </div>
       </div>

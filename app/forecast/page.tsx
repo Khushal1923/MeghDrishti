@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import { TopHeader } from "@/components/TopHeader";
-import { ForecastCard } from "@/components/ForecastCard";
 import { PANCHAYATS_DATA } from "@/lib/data";
 import { fetchPrediction } from "@/lib/api";
 import { PredictionResult } from "@/lib/types";
+import { ForecastCard } from "@/components/ForecastCard";
 import { MapPin } from "lucide-react";
 import { formatRainfall, formatTemp, formatPercent } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
+import { tx } from "@/lib/t";
 
 export default function WeatherForecastPage() {
   const { language, setLanguage } = useLanguage();
@@ -26,12 +27,17 @@ export default function WeatherForecastPage() {
   const tempC = prediction ? prediction.corrected_temp : current.latest_temp_estimate;
   const rainProb = prediction ? prediction.rain_prob : current.latest_rain_prob;
 
+  const dayLabels = [
+    tx(language, "today"),
+    tx(language, "tomorrow"),
+    tx(language, "day2"),
+    tx(language, "day3"),
+    tx(language, "day5"),
+  ];
+
   return (
     <div className="flex-1 pb-16 space-y-6 bg-[#edf2ed]">
-      <TopHeader
-        language={language}
-        onLanguageChange={(l) => setLanguage(l)}
-      />
+      <TopHeader language={language} onLanguageChange={(l) => setLanguage(l)} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-5">
         {/* Location & Horizon Selector Bar */}
@@ -42,7 +48,7 @@ export default function WeatherForecastPage() {
             </div>
             <div>
               <label className="text-[10px] uppercase font-extrabold text-[#166534]/70 tracking-wider block">
-                {language === "mr" ? "ग्रामपंचायत निवडा" : "Select Panchayat"}
+                {tx(language, "selectPanchayat")}
               </label>
               <select
                 value={selectedLgd}
@@ -60,7 +66,7 @@ export default function WeatherForecastPage() {
 
           {/* Horizon Pills */}
           <div className="flex items-center gap-1 bg-[#e4eee4] p-1 rounded-full border border-[#c3d6c4] text-xs font-bold overflow-x-auto no-scrollbar max-w-full shrink-0">
-            {[1, 2, 3, 4, 5].map((lead) => (
+            {[1, 2, 3, 4, 5].map((lead, i) => (
               <button
                 key={lead}
                 onClick={() => setLeadDays(lead)}
@@ -70,7 +76,7 @@ export default function WeatherForecastPage() {
                     : "text-[#166534] hover:text-[#0b1f11]"
                 }`}
               >
-                +{lead} Day{lead > 1 ? "s" : ""}
+                {dayLabels[i]}
               </button>
             ))}
           </div>
@@ -79,57 +85,54 @@ export default function WeatherForecastPage() {
         {/* Current Condition Metrics */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           <div className="p-4 rounded-2xl bg-[#f4f8f4] border border-[#c8d9c8] shadow-2xs space-y-1">
-            <span className="text-[10px] text-[#166534]/70 font-bold uppercase tracking-wider block">Temperature</span>
+            <span className="text-[10px] text-[#166534]/70 font-bold uppercase tracking-wider block">{tx(language, "temperature")}</span>
             <div className="text-2xl font-extrabold text-[#0f2918]">{formatTemp(tempC)}</div>
-            <span className="text-[11px] text-[#2b4c34] font-semibold block">Terrain lapse corrected</span>
+            <span className="text-[11px] text-[#2b4c34] font-semibold block">{tx(language, "terrainLapse")}</span>
           </div>
 
           <div className="p-4 rounded-2xl bg-[#f4f8f4] border border-[#c8d9c8] shadow-2xs space-y-1">
-            <span className="text-[10px] text-[#166534]/70 font-bold uppercase tracking-wider block">Rainfall</span>
+            <span className="text-[10px] text-[#166534]/70 font-bold uppercase tracking-wider block">{tx(language, "rainfall")}</span>
             <div className="text-2xl font-extrabold text-[#166534]">{formatRainfall(rainMm)}</div>
-            <span className="text-[11px] text-[#166534] font-bold block">{prediction?.rain_category || "Light Rain"}</span>
+            <span className="text-[11px] text-[#166534] font-bold block">{prediction?.rain_category || tx(language, "rainCategory")}</span>
           </div>
 
           <div className="p-4 rounded-2xl bg-[#f4f8f4] border border-[#c8d9c8] shadow-2xs space-y-1">
-            <span className="text-[10px] text-[#166534]/70 font-bold uppercase tracking-wider block">Rain Probability</span>
+            <span className="text-[10px] text-[#166534]/70 font-bold uppercase tracking-wider block">{tx(language, "rainProb").replace(":", "")}</span>
             <div className="text-2xl font-extrabold text-sky-800">{formatPercent(rainProb)}</div>
-            <span className="text-[11px] text-[#2b4c34] font-semibold block">&ge; 2.5 mm threshold</span>
+            <span className="text-[11px] text-[#2b4c34] font-semibold block">{tx(language, "threshold")}</span>
           </div>
 
           <div className="p-4 rounded-2xl bg-[#f4f8f4] border border-[#c8d9c8] shadow-2xs space-y-1">
-            <span className="text-[10px] text-[#166534]/70 font-bold uppercase tracking-wider block">Wind Speed</span>
+            <span className="text-[10px] text-[#166534]/70 font-bold uppercase tracking-wider block">{tx(language, "windSpeed")}</span>
             <div className="text-2xl font-extrabold text-[#0f2918]">{prediction?.wind_kmh || 12} km/h</div>
-            <span className="text-[11px] text-[#2b4c34] font-semibold block">Surface gust proxy</span>
+            <span className="text-[11px] text-[#2b4c34] font-semibold block">{tx(language, "surfaceGust")}</span>
           </div>
 
           <div className="p-4 rounded-2xl bg-[#f4f8f4] border border-[#c8d9c8] shadow-2xs space-y-1 col-span-2 sm:col-span-1">
-            <span className="text-[10px] text-[#166534]/70 font-bold uppercase tracking-wider block">Relative Humidity</span>
+            <span className="text-[10px] text-[#166534]/70 font-bold uppercase tracking-wider block">{tx(language, "humidity")}</span>
             <div className="text-2xl font-extrabold text-[#0f2918]">{prediction?.humidity_proxy || 68}%</div>
-            <span className="text-[11px] text-[#2b4c34] font-semibold block">Boundary layer proxy</span>
+            <span className="text-[11px] text-[#2b4c34] font-semibold block">{tx(language, "humidityProxy")}</span>
           </div>
         </div>
 
         {/* Detailed Downscaling Card */}
         {prediction && (
-          <ForecastCard
-            data={prediction}
-            onLeadChange={(lead) => setLeadDays(lead)}
-          />
+          <ForecastCard data={prediction} onLeadChange={(lead) => setLeadDays(lead)} />
         )}
 
         {/* 5-Day Outlook Strip */}
         <div className="bg-[#f4f8f4] border border-[#c8d9c8] rounded-3xl p-5 md:p-6 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-extrabold text-[#0f2918] tracking-tight">
-              5-Day Downscaled Weather Horizon
+              {tx(language, "forecastTitle")}
             </h3>
             <span className="text-xs text-[#2b4c34] font-medium">
-              Resolution: <strong className="text-[#0f2918]">1 km Panchayat Scale</strong> &bull; Lat: {current.latitude.toFixed(2)}°N
+              {tx(language, "forecastResolution")} &bull; Lat: {current.latitude.toFixed(2)}°N
             </span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
-            {[1, 2, 3, 4, 5].map((day) => {
+            {[1, 2, 3, 4, 5].map((day, i) => {
               const estRain = Math.max(0, current.latest_rainfall_estimate + (day - 2) * 1.5);
               const estTemp = current.latest_temp_estimate + (day % 2 === 0 ? -0.5 : 0.8);
               const isSelected = leadDays === day;
@@ -145,25 +148,23 @@ export default function WeatherForecastPage() {
                   }`}
                 >
                   <div className="flex items-center justify-between text-xs font-bold text-[#0f2918]">
-                    <span>Day +{day}</span>
+                    <span>{dayLabels[i]}</span>
                     <span className="text-[10px] font-extrabold text-[#166534] bg-[#d5e8d5] px-2 py-0.5 rounded-full border border-[#b8d8b8]">
-                      {Math.round(current.trust_score * 100)}% Trust
+                      {Math.round(current.trust_score * 100)}% {tx(language, "trust")}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-[10px] text-[#166534]/70 block font-medium">Downscaled Rain</span>
-                    <div className="text-lg font-extrabold text-[#0f2918]">
-                      {formatRainfall(estRain)}
-                    </div>
+                    <span className="text-[10px] text-[#166534]/70 block font-medium">{tx(language, "rainFull")}</span>
+                    <div className="text-lg font-extrabold text-[#0f2918]">{formatRainfall(estRain)}</div>
                   </div>
 
                   <div className="text-xs font-bold text-[#2b4c34]">
-                    Temp: {formatTemp(estTemp)}
+                    {tx(language, "temp")} {formatTemp(estTemp)}
                   </div>
 
                   <div className="pt-2 border-t border-[#c3d6c4] text-[10px] text-[#2b4c34] flex items-center justify-between font-medium">
-                    <span>P(Rain):</span>
+                    <span>{tx(language, "rainProb")}</span>
                     <strong className="text-sky-800 font-bold">{formatPercent(current.latest_rain_prob)}</strong>
                   </div>
                 </div>

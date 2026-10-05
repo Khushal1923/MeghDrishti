@@ -6,6 +6,7 @@ import { ForecastComparisonChart } from "@/components/ForecastComparisonChart";
 import { PANCHAYATS_DATA } from "@/lib/data";
 import { Filter, CheckCircle2, TrendingUp, Sparkles } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
+import { tx } from "@/lib/t";
 
 export default function ForecastComparisonPage() {
   const { language, setLanguage } = useLanguage();
@@ -14,12 +15,16 @@ export default function ForecastComparisonPage() {
 
   const current = PANCHAYATS_DATA.find((p) => p.lgd_code === selectedLgd) || PANCHAYATS_DATA[0];
 
+  const seasons = [
+    { id: "Monsoon",       label: tx(language, "seasonMonsoon") },
+    { id: "Pre-Monsoon",   label: tx(language, "seasonPreMonsoon") },
+    { id: "Winter",        label: tx(language, "seasonWinter") },
+    { id: "Post-Monsoon",  label: tx(language, "seasonPostMonsoon") },
+  ];
+
   return (
     <div className="flex-1 pb-16 space-y-6 bg-[#edf2ed]">
-      <TopHeader
-        language={language}
-        onLanguageChange={(l) => setLanguage(l)}
-      />
+      <TopHeader language={language} onLanguageChange={(l) => setLanguage(l)} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-5">
         {/* Top Selectors Bar */}
@@ -30,7 +35,7 @@ export default function ForecastComparisonPage() {
             </div>
             <div>
               <label className="text-[10px] uppercase font-extrabold text-[#166534]/70 tracking-wider block">
-                {language === "mr" ? "ग्रामपंचायत निवडा" : "Benchmark Panchayat"}
+                {tx(language, "benchmarkPanchayat")}
               </label>
               <select
                 value={selectedLgd}
@@ -48,23 +53,23 @@ export default function ForecastComparisonPage() {
 
           {/* Season Selector */}
           <div className="flex items-center gap-1 bg-[#e4eee4] p-1 rounded-full border border-[#c3d6c4] text-xs font-bold overflow-x-auto no-scrollbar max-w-full shrink-0">
-            {["Monsoon", "Pre-Monsoon", "Winter", "Post-Monsoon"].map((s) => (
+            {seasons.map((s) => (
               <button
-                key={s}
-                onClick={() => setSelectedSeason(s)}
+                key={s.id}
+                onClick={() => setSelectedSeason(s.id)}
                 className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full transition-all shrink-0 text-[11px] sm:text-xs ${
-                  selectedSeason === s
+                  selectedSeason === s.id
                     ? "bg-[#166534] text-white shadow-xs font-extrabold"
                     : "text-[#166534] hover:text-[#0b1f11]"
                 }`}
               >
-                {s}
+                {s.label}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Main Comparison Component with 3 KPIs and Dominant Recharts Visual */}
+        {/* Main Comparison Component */}
         <ForecastComparisonChart panchayatName={current.panchayat_name} />
 
         {/* Compact Methodology Section */}
@@ -72,30 +77,30 @@ export default function ForecastComparisonPage() {
           <div className="bg-[#f4f8f4] border border-[#c8d9c8] rounded-2xl p-4 shadow-2xs space-y-1.5">
             <div className="flex items-center gap-2 text-[#0f2918] font-extrabold text-xs uppercase tracking-wider">
               <TrendingUp className="w-4 h-4 text-[#166534]" />
-              <span>1. Baseline vs AI Error</span>
+              <span>{tx(language, "compCard1Title")}</span>
             </div>
             <p className="text-xs text-[#2b4c34] leading-relaxed font-medium">
-              Every forecast is benchmarked against raw coarse NWP. If local ML performs worse on unseen test data, the system flags no improvement.
+              {tx(language, "compCard1Body")}
             </p>
           </div>
 
           <div className="bg-[#f4f8f4] border border-[#c8d9c8] rounded-2xl p-4 shadow-2xs space-y-1.5">
             <div className="flex items-center gap-2 text-[#0f2918] font-extrabold text-xs uppercase tracking-wider">
               <CheckCircle2 className="w-4 h-4 text-[#166534]" />
-              <span>2. Leakage-Free Validation</span>
+              <span>{tx(language, "compCard2Title")}</span>
             </div>
             <p className="text-xs text-[#2b4c34] leading-relaxed font-medium">
-              Chronological split ensures future observations or test-period climatologies never leak into the downscaling feature pipeline.
+              {tx(language, "compCard2Body")}
             </p>
           </div>
 
           <div className="bg-[#f4f8f4] border border-[#c8d9c8] rounded-2xl p-4 shadow-2xs space-y-1.5">
             <div className="flex items-center gap-2 text-[#0f2918] font-extrabold text-xs uppercase tracking-wider">
               <Sparkles className="w-4 h-4 text-amber-700" />
-              <span>3. Orographic Resolution</span>
+              <span>{tx(language, "compCard3Title")}</span>
             </div>
             <p className="text-xs text-[#2b4c34] leading-relaxed font-medium">
-              Elevation, slope, and land cover features enable the model to resolve localized rain-shadow valleys and Ghats rainfall.
+              {tx(language, "compCard3Body")}
             </p>
           </div>
         </div>
