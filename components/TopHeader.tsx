@@ -2,21 +2,24 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Menu,
   X,
   Lock,
   CheckCircle,
   Sprout,
+  LayoutDashboard,
+  CloudSun,
   MapPin,
   BarChart3,
   Activity,
   Layers,
   Settings,
   Globe2,
-  ExternalLink,
 } from "lucide-react";
 import { useLanguage, type Language } from "@/lib/LanguageContext";
+import { cn } from "@/lib/utils";
 
 interface TopHeaderProps {
   title?: string;
@@ -40,6 +43,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   const { language: contextLang, setLanguage: setContextLang } = useLanguage();
   const currentLang = propLang || contextLang;
   const language = currentLang;
+  const pathname = usePathname();
 
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -61,144 +65,175 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
     setShowLoginModal(false);
   };
 
-  const secondaryNavItems = [
-    { labelEn: "Panchayat Map", labelMr: "हवामान नकाशा", href: "/map", icon: MapPin },
+  const allNavItems = [
+    { labelEn: "Dashboard", labelMr: "डॅशबोर्ड", href: "/", icon: LayoutDashboard },
+    { labelEn: "Crop Advisory", labelMr: "पीक सल्ला", href: "/advisory", icon: Sprout },
+    { labelEn: "Weather Forecast", labelMr: "हवामान अंदाज", href: "/forecast", icon: CloudSun },
+    { labelEn: "Forecast Compare", labelMr: "अंदाज तुलना", href: "/comparison", icon: BarChart3 },
+    { labelEn: "Panchayat Directory", labelMr: "गाव यादी", href: "/panchayats", icon: MapPin },
+    { labelEn: "Weather Map", labelMr: "हवामान नकाशा", href: "/map", icon: MapPin },
     { labelEn: "Accuracy Validation", labelMr: "अचूकता पडताळणी", href: "/validation", icon: BarChart3 },
-    { labelEn: "Model & Data Lineage", labelMr: "मॉडेल व डेटा माहिती", href: "/models", icon: Layers },
+    { labelEn: "Model & Data Lineage", labelMr: "मॉडेल व डेटा", href: "/models", icon: Layers },
     { labelEn: "System Health", labelMr: "सिस्टम स्थिती", href: "/health", icon: Activity },
     { labelEn: "Calibration Settings", labelMr: "कॅलिब्रेशन सेटिंग्ज", href: "/settings", icon: Settings },
-    { labelEn: "Project Landing", labelMr: "प्रकल्प परिचय", href: "/landing", icon: Globe2 },
+    { labelEn: "Landing Overview", labelMr: "प्रकल्प माहिती", href: "/landing", icon: Globe2 },
   ];
 
   return (
-    <header className="sticky top-0 z-30 bg-[#e5eee5]/95 backdrop-blur-md border-b border-[#c8d9c8] px-3.5 sm:px-6 md:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-4 shadow-xs">
-      {/* Left: Hamburger menu (mobile) & Brand Logo */}
-      <div className="flex items-center gap-2 sm:gap-3">
-        {/* Mobile Menu Hamburger Button */}
-        <button
-          onClick={() => setShowMobileMenu(true)}
-          className="md:hidden w-8 h-8 rounded-xl bg-[#d5e4d5] hover:bg-[#c6d9c6] text-[#166534] flex items-center justify-center transition-colors shrink-0"
-          aria-label="Open menu"
-        >
-          <Menu className="w-4 h-4" />
-        </button>
-
-        <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
-          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[#166534] text-white flex items-center justify-center shrink-0 shadow-xs">
-            <Sprout className="w-4 h-4 text-emerald-100" />
-          </div>
-          <span className="font-extrabold text-lg sm:text-2xl tracking-tight text-[#166534]">
-            MeghDrishti
-          </span>
-        </Link>
-      </div>
-
-      {/* Right: Language Toggle + Login Button */}
-      <div className="flex items-center gap-1.5 sm:gap-3">
-        {/* Language Toggle (मराठी | English Switch) */}
-        <div className="flex items-center bg-[#d5e4d5] p-0.5 rounded-full border border-[#c3d6c4] text-[11px] sm:text-xs font-bold">
+    <>
+      {/* Top Sticky Header */}
+      <header className="sticky top-0 z-30 bg-[#e5eee5]/95 backdrop-blur-md border-b border-[#c8d9c8] px-3.5 sm:px-6 md:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-4 shadow-xs">
+        {/* Left: Hamburger menu (mobile) & Brand Logo */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Mobile Menu Hamburger Button */}
           <button
-            onClick={() => handleLanguageSwitch("mr")}
-            className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full transition-all ${
-              currentLang === "mr"
-                ? "bg-[#166534] text-white shadow-xs font-extrabold"
-                : "text-[#166534] hover:text-[#0b1f11]"
-            }`}
+            onClick={() => setShowMobileMenu(true)}
+            className="md:hidden w-9 h-9 rounded-xl bg-[#d5e4d5] hover:bg-[#c6d9c6] text-[#166534] flex items-center justify-center transition-colors shrink-0 shadow-2xs active:scale-95"
+            aria-label="Open menu"
           >
-            मराठी
+            <Menu className="w-5 h-5" />
           </button>
-          <button
-            onClick={() => handleLanguageSwitch("en")}
-            className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full transition-all ${
-              currentLang === "en"
-                ? "bg-[#166534] text-white shadow-xs font-extrabold"
-                : "text-[#166534] hover:text-[#0b1f11]"
-            }`}
-          >
-            English
-          </button>
+
+          <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[#166534] text-white flex items-center justify-center shrink-0 shadow-xs">
+              <Sprout className="w-4 h-4 text-emerald-100" />
+            </div>
+            <span className="font-extrabold text-lg sm:text-2xl tracking-tight text-[#166534]">
+              MeghDrishti
+            </span>
+          </Link>
         </div>
 
-        {/* Login Button */}
-        {isLoggedIn ? (
-          <div className="flex items-center gap-1.5 bg-[#d7ead9] border border-[#a7d4ac] px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold text-[#166534]">
-            <span>{userRole}</span>
+        {/* Right: Language Toggle + Login Button */}
+        <div className="flex items-center gap-1.5 sm:gap-3">
+          {/* Language Toggle (मराठी | English Switch) */}
+          <div className="flex items-center bg-[#d5e4d5] p-0.5 rounded-full border border-[#c3d6c4] text-[11px] sm:text-xs font-bold">
             <button
-              onClick={() => setIsLoggedIn(false)}
-              className="text-[#166534]/70 hover:text-rose-700 transition-colors ml-0.5 text-[10px] sm:text-[11px] font-medium underline"
+              onClick={() => handleLanguageSwitch("mr")}
+              className={`px-2.5 sm:px-3 py-1 rounded-full transition-all ${
+                currentLang === "mr"
+                  ? "bg-[#166534] text-white shadow-xs font-extrabold"
+                  : "text-[#166534] hover:text-[#0b1f11]"
+              }`}
             >
-              Exit
+              मराठी
+            </button>
+            <button
+              onClick={() => handleLanguageSwitch("en")}
+              className={`px-2.5 sm:px-3 py-1 rounded-full transition-all ${
+                currentLang === "en"
+                  ? "bg-[#166534] text-white shadow-xs font-extrabold"
+                  : "text-[#166534] hover:text-[#0b1f11]"
+              }`}
+            >
+              English
             </button>
           </div>
-        ) : (
-          <button
-            onClick={() => setShowLoginModal(true)}
-            className="px-3 sm:px-4 py-1 sm:py-1.5 bg-[#166534] hover:bg-[#15803d] text-white rounded-full text-[11px] sm:text-xs font-extrabold shadow-xs transition-all tracking-wide shrink-0"
-          >
-            Login
-          </button>
-        )}
-      </div>
+
+          {/* Login Button */}
+          {isLoggedIn ? (
+            <div className="flex items-center gap-1.5 bg-[#d7ead9] border border-[#a7d4ac] px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold text-[#166534]">
+              <span>{userRole}</span>
+              <button
+                onClick={() => setIsLoggedIn(false)}
+                className="text-[#166534]/70 hover:text-rose-700 transition-colors ml-0.5 text-[10px] sm:text-[11px] font-medium underline"
+              >
+                Exit
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowLoginModal(true)}
+              className="px-3 sm:px-4 py-1 sm:py-1.5 bg-[#166534] hover:bg-[#15803d] text-white rounded-full text-[11px] sm:text-xs font-extrabold shadow-xs transition-all tracking-wide shrink-0"
+            >
+              Login
+            </button>
+          )}
+        </div>
+      </header>
 
       {/* ========================================================= */}
-      {/* MOBILE SLIDE-OUT DRAWER */}
+      {/* MOBILE FULL-SCREEN SLIDE-OUT DRAWER (OUTSIDE HEADER) */}
       {/* ========================================================= */}
       {showMobileMenu && (
-        <div className="fixed inset-0 z-50 bg-[#0c2413]/70 backdrop-blur-xs flex md:hidden animate-fade-in">
-          <div className="bg-[#eaf1ea] w-4/5 max-w-xs h-full border-r border-[#c3d6c4] shadow-2xl p-5 flex flex-col justify-between overflow-y-auto">
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-xs flex md:hidden">
+          {/* Drawer Panel */}
+          <div className="bg-[#eaf1ea] w-[290px] max-w-[85vw] h-full border-r border-[#c3d6c4] shadow-2xl p-4 sm:p-5 flex flex-col justify-between overflow-y-auto animate-in slide-in-from-left duration-200">
             <div className="space-y-4">
+              {/* Drawer Header */}
               <div className="flex items-center justify-between pb-3 border-b border-[#c8d9c8]">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-[#166534] text-white flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-xl bg-[#166534] text-white flex items-center justify-center shadow-xs">
                     <Sprout className="w-4 h-4 text-emerald-100" />
                   </div>
-                  <span className="font-black text-lg text-[#0f2918]">MeghDrishti</span>
+                  <div>
+                    <span className="font-black text-lg text-[#0f2918] block leading-tight">
+                      MeghDrishti
+                    </span>
+                    <span className="text-[10px] font-bold text-[#166534] uppercase tracking-wider block">
+                      {language === "mr" ? "स्थानिक हवामान प्रणाली" : "Panchayat Weather AI"}
+                    </span>
+                  </div>
                 </div>
+
                 <button
                   onClick={() => setShowMobileMenu(false)}
-                  className="w-8 h-8 rounded-lg bg-[#d5e4d5] hover:bg-[#c6d9c6] text-[#166534] flex items-center justify-center"
+                  className="w-8 h-8 rounded-xl bg-[#d5e4d5] hover:bg-[#c6d9c6] text-[#166534] flex items-center justify-center transition-colors"
+                  aria-label="Close menu"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="text-[10px] uppercase font-black tracking-wider text-[#166534]/70 px-1">
-                {language === "mr" ? "अधिक विभाग व साधने" : "Modules & Tools"}
-              </div>
-
-              <nav className="space-y-1.5">
-                {secondaryNavItems.map((item) => {
+              {/* Navigation List */}
+              <nav className="space-y-1">
+                {allNavItems.map((item) => {
                   const Icon = item.icon;
+                  const active = pathname === item.href;
                   const label = language === "mr" ? item.labelMr : item.labelEn;
+
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
                       onClick={() => setShowMobileMenu(false)}
-                      className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-extrabold text-[#0f2918] bg-[#f4f8f4] hover:bg-[#d7ead9] border border-[#c8d9c8] transition-all"
+                      className={cn(
+                        "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all",
+                        active
+                          ? "bg-[#166534] text-white shadow-xs font-black"
+                          : "text-[#0f2918] hover:bg-[#d7ead9] border border-transparent"
+                      )}
                     >
-                      <Icon className="w-4 h-4 text-[#166534]" />
-                      <span>{label}</span>
+                      <Icon className={cn("w-4 h-4 shrink-0", active ? "text-white" : "text-[#166534]")} />
+                      <span className="truncate">{label}</span>
                     </Link>
                   );
                 })}
               </nav>
             </div>
 
-            <div className="pt-4 border-t border-[#c8d9c8] text-[10px] text-[#2b4c34] font-bold text-center">
-              Smart India Hackathon &bull; IMD Downscaling Platform
+            {/* Drawer Footer */}
+            <div className="pt-4 border-t border-[#c8d9c8] space-y-2">
+              <div className="text-[10px] text-[#2b4c34] font-bold text-center">
+                Ministry of Earth Sciences / IMD Downscaling Platform
+              </div>
             </div>
           </div>
 
-          <div className="flex-1" onClick={() => setShowMobileMenu(false)} />
+          {/* Clickable Backdrop to Close */}
+          <div
+            className="flex-1"
+            onClick={() => setShowMobileMenu(false)}
+            aria-label="Close backdrop"
+          />
         </div>
       )}
 
       {/* ========================================================= */}
-      {/* LOGIN MODAL (RESPONSIVE) */}
+      {/* LOGIN MODAL (RESPONSIVE & OUTSIDE HEADER) */}
       {/* ========================================================= */}
       {showLoginModal && (
-        <div className="fixed inset-0 z-50 bg-[#0c2413]/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
           <div className="bg-[#eaf1ea] rounded-3xl max-w-md w-full border border-[#c3d6c4] shadow-2xl p-4 sm:p-6 space-y-4 sm:space-y-5">
             <div className="flex items-start justify-between border-b border-[#c8d9c8] pb-3">
               <div>
@@ -295,6 +330,6 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           </div>
         </div>
       )}
-    </header>
+    </>
   );
 };
